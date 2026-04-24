@@ -1,0 +1,227 @@
+=====================================================
+  SISTEM ABSENSI SEKOLAH - PANDUAN INSTALASI LENGKAP
+  Versi: 2.0 | PHP + MySQL | XAMPP & Hosting
+=====================================================
+
+LOGIN DEFAULT:
+  Username : admin
+  Password : password
+
+=====================================================
+  A. INSTALASI DI XAMPP (LOKAL)
+=====================================================
+
+LANGKAH 1 - PERSIAPAN
+  ✅ Pastikan XAMPP sudah terinstal
+  ✅ Aktifkan Apache dan MySQL di XAMPP Control Panel
+
+LANGKAH 2 - COPY FILE
+  📁 Copy folder "absensi" ke:
+     C:\xampp\htdocs\absensi\
+  
+  Struktur akhir:
+  C:\xampp\htdocs\absensi\
+    ├── index.php
+    ├── login.php
+    ├── dashboard.php
+    ├── install.sql
+    ├── .htaccess
+    ├── includes\
+    ├── ajax\
+    ├── assets\
+    └── uploads\
+
+LANGKAH 3 - BUAT DATABASE
+  🌐 Buka browser → http://localhost/phpmyadmin
+  1. Klik "New" di sidebar kiri
+  2. Nama database: absensi_sekolah
+  3. Collation: utf8mb4_unicode_ci
+  4. Klik "Create"
+  5. Klik tab "Import" → Choose File → pilih "install.sql"
+  6. Klik "Go"
+
+LANGKAH 4 - KONFIGURASI (config.php)
+  📝 Edit file: includes/config.php
+  
+  Untuk XAMPP (tidak perlu diubah):
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+    define('DB_NAME', 'absensi_sekolah');
+    define('BASE_URL', '/absensi/');
+
+LANGKAH 5 - JALANKAN
+  🌐 Buka browser → http://localhost/absensi
+  📌 Login: admin / password
+
+=====================================================
+  B. INSTALASI DI HOSTING (ONLINE)
+=====================================================
+
+LANGKAH 1 - BUAT DATABASE DI cPANEL
+  📋 Login ke cPanel hosting Anda
+  1. Buka "MySQL Databases"
+  2. Buat database baru, contoh: namauser_absensi
+  3. Buat user MySQL baru dengan password
+  4. Tambahkan user ke database (pilih "All Privileges")
+  5. Catat: nama database, username, password
+
+LANGKAH 2 - IMPORT DATABASE
+  📋 Di cPanel → phpMyAdmin
+  1. Pilih database yang baru dibuat
+  2. Klik tab "Import"
+  3. Upload file "install.sql"
+  4. Klik "Go"
+
+LANGKAH 3 - EDIT KONFIGURASI
+  📝 Edit file: includes/config.php
+  
+  Ganti sesuai data hosting Anda:
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'namauser_absensi');    ← GANTI
+    define('DB_PASS', 'passwordanda');         ← GANTI
+    define('DB_NAME', 'namauser_absensi');    ← GANTI
+    
+  Untuk BASE_URL:
+    - Jika upload ke ROOT domain (public_html/):
+      define('BASE_URL', '/');
+    - Jika upload ke SUBFOLDER (public_html/absensi/):
+      define('BASE_URL', '/absensi/');
+
+LANGKAH 4 - UPLOAD FILE
+  📤 Via File Manager cPanel atau FTP (FileZilla):
+  
+  Opsi A - Root domain (namawebsite.com):
+    Upload semua isi folder "absensi" → ke public_html/
+    
+  Opsi B - Subfolder (namawebsite.com/absensi):
+    Upload semua isi folder "absensi" → ke public_html/absensi/
+
+LANGKAH 5 - SET PERMISSION FOLDER
+  📋 Di File Manager cPanel:
+  Klik kanan folder "uploads" → Change Permissions → 755
+  Klik kanan folder "uploads/foto" → Change Permissions → 755
+  Klik kanan folder "uploads/logo" → Change Permissions → 755
+  Klik kanan folder "uploads/excel" → Change Permissions → 755
+
+LANGKAH 6 - AKTIFKAN HTTPS (opsional tapi disarankan)
+  📋 Di cPanel → SSL/TLS → Let's Encrypt
+  Setelah aktif, buka includes/config.php
+  Uncomment baris redirect HTTPS di .htaccess
+
+LANGKAH 7 - AKSES WEBSITE
+  🌐 Buka browser → https://namawebsite.com
+  📌 Login: admin / password
+
+=====================================================
+  C. STRUKTUR FILE LENGKAP
+=====================================================
+
+absensi/
+├── .htaccess              ← Keamanan & konfigurasi Apache
+├── PANDUAN_INSTALL.txt    ← File panduan ini
+├── index.php              ← Redirect ke dashboard/login
+├── login.php              ← Halaman login admin
+├── logout.php             ← Proses logout
+├── dashboard.php          ← Dashboard utama + statistik
+├── scan.php               ← Scan barcode (kamera/USB)
+├── manual.php             ← Absensi manual per kelas
+├── siswa.php              ← CRUD data siswa + import CSV
+├── barcode_generate.php   ← Generate & cetak barcode
+├── rekap_harian.php       ← Rekap absensi harian
+├── rekap_bulanan.php      ← Rekap absensi bulanan
+├── rekap_status.php       ← Rekap status keseluruhan
+├── grafik.php             ← Grafik tren kehadiran
+├── terlambat.php          ← Daftar siswa terlambat
+├── belum_absen.php        ← Daftar siswa belum absen
+├── hapus_log.php          ← Hapus log + backup otomatis
+├── pengaturan.php         ← Pengaturan nama & logo sekolah
+├── pengaturan_waktu.php   ← Pengaturan jam masuk/pulang
+├── install.sql            ← Script database
+├── includes/
+│   ├── config.php         ← ⚙️ KONFIGURASI UTAMA - EDIT INI
+│   ├── header.php         ← Template header + sidebar
+│   └── footer.php         ← Template footer
+├── ajax/
+│   ├── absen_scan.php     ← API proses scan barcode
+│   ├── get_log.php        ← API ambil log hari ini
+│   ├── export_harian.php  ← Export CSV harian
+│   ├── export_bulanan.php ← Export CSV bulanan
+│   ├── download_template.php ← Download template CSV
+│   └── ganti_password.php ← Proses ganti password
+├── assets/
+│   ├── css/style.css      ← Stylesheet utama
+│   └── js/app.js          ← JavaScript utama
+└── uploads/
+    ├── .htaccess          ← Proteksi folder uploads
+    ├── foto/              ← Foto profil siswa
+    ├── logo/              ← Logo sekolah
+    └── excel/             ← File export sementara
+
+=====================================================
+  D. FITUR LENGKAP SISTEM
+=====================================================
+
+✅ Dashboard realtime dengan statistik kehadiran
+✅ Scan barcode 3 metode: Kamera HP/PC, Webcam, USB Scanner
+✅ Absensi manual per kelas dengan batch save
+✅ CRUD data siswa + import dari CSV + upload foto
+✅ Generate & cetak kartu barcode (CODE-128 & QR Code)
+✅ Rekap harian dengan export CSV
+✅ Rekap bulanan dengan progress bar persentase
+✅ Rekap status keseluruhan + grafik pie
+✅ Grafik tren kehadiran 30 hari (line + bar chart)
+✅ Daftar siswa terlambat + hitung menit keterlambatan
+✅ Daftar siswa belum absen hari ini
+✅ Hapus log dengan auto-backup ke rekap bulanan
+✅ Pengaturan sekolah: nama, alamat, logo
+✅ Pengaturan waktu: jam masuk, terlambat, pulang
+✅ Ganti password admin
+✅ Responsive mobile-friendly
+✅ Print rekap langsung dari browser
+
+=====================================================
+  E. TROUBLESHOOTING
+=====================================================
+
+❌ Error: "Koneksi Database Gagal"
+   → Periksa DB_HOST, DB_USER, DB_PASS, DB_NAME di config.php
+   → Pastikan MySQL/MariaDB sudah berjalan
+   → Pastikan database sudah dibuat dan SQL sudah diimport
+
+❌ Error: "404 Not Found" di halaman tertentu
+   → Periksa BASE_URL di config.php
+   → Pastikan .htaccess ada dan Apache mod_rewrite aktif
+
+❌ Foto/Logo tidak muncul
+   → Periksa permission folder uploads/ (harus 755)
+   → Periksa BASE_URL apakah sudah benar
+
+❌ Kamera tidak bisa scan di hosting
+   → Hosting harus menggunakan HTTPS (SSL aktif)
+   → Browser memblokir akses kamera di HTTP
+
+❌ Import CSV gagal
+   → Pastikan format CSV: NIS, Nama, Kelas
+   → Baris pertama adalah header (otomatis dilewati)
+   → Encoding file harus UTF-8
+
+=====================================================
+  F. KEAMANAN
+=====================================================
+
+🔐 Segera ganti password setelah instalasi!
+   Pengaturan → Ganti Password Admin
+
+🔒 Untuk hosting, aktifkan HTTPS (Let's Encrypt gratis)
+   Uncomment bagian redirect HTTPS di .htaccess
+
+🛡️ File .htaccess sudah mengamankan:
+   - Folder includes/ tidak bisa diakses langsung
+   - File .sql tidak bisa didownload
+   - Directory listing dinonaktifkan
+
+=====================================================
+  SELESAI! Jika ada masalah, periksa kembali langkah
+  di atas atau hubungi pengembang sistem.
+=====================================================

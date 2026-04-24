@@ -1,0 +1,27 @@
+# Uploads folder (foto siswa, logo, dsb)
+uploads/foto/*
+uploads/logo/*
+!uploads/foto/.gitkeep
+!uploads/logo/.gitkeep
+
+# Environment secrets
+.env
+
+# Logs
+*.log
+error_log
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Node (jika pernah npm install lokal)
+node_modules/
+
+# Database dumps (jangan commit ke repo)
+*.sql
+!database/*.sql

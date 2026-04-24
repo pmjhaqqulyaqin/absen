@@ -1,0 +1,7 @@
+.git
+.gitignore
+.env
+.env.example
+*.md
+node_modules
+database/*.sql

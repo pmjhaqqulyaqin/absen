@@ -1,0 +1,6 @@
+# Proteksi folder uploads - hanya izinkan file gambar
+Options -Indexes
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|cgi|sh|py)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Aplikasi Absensi (PHP + Nginx)
+  absen-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: absen-app
+    restart: unless-stopped
+    ports:
+      # Port 18082 — unik, tidak bertabrakan dengan Lapkin (18080/18081)
+      - "18082:80"
+    environment:
+      - TZ=${TZ:-Asia/Makassar}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-mandalo1_presensi}
+      - MYSQL_USER=${MYSQL_USER:-mandalo1_presensi}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-manoke2004}
+    volumes:
+      # Persistent uploads (foto siswa, logo sekolah)
+      - absen_uploads:/var/www/html/uploads
+    depends_on:
+      absen-db:
+        condition: service_healthy
+
+  # Database MariaDB
+  absen-db:
+    image: mariadb:10.11
+    container_name: absen-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-absen_root_change_me}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mandalo1_presensi}
+      MYSQL_USER: ${MYSQL_USER:-mandalo1_presensi}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-manoke2004}
+      TZ: ${TZ:-Asia/Makassar}
+    volumes:
+      - absen_dbdata:/var/lib/mysql
+      # Auto-import schema saat pertama kali container dibuat
+      - ./database:/docker-entrypoint-initdb.d
+    ports:
+      # Port 18083 — untuk akses langsung (debug/backup), tidak wajib di-expose
+      - "18083:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  absen_dbdata:
+    name: absen_mysql_data
+  absen_uploads:
+    name: absen_uploads_data
