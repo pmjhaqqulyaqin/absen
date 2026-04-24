@@ -424,9 +424,9 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
                         <i class="fas fa-spinner fa-spin"></i> Memuat library...
                     </div>
                     <div class="video-box">
-                        <div id="scanPlaceholder">
+                        <div id="scanPlaceholder" onclick="startScan()" style="cursor:pointer">
                             <i class="fas fa-camera fa-3x" style="margin-bottom:10px"></i>
-                            <p style="font-size:.85rem">Klik <strong style="color:white">Mulai Scan</strong></p>
+                            <p style="font-size:.85rem">Tap untuk <strong style="color:white">Mulai Scan</strong></p>
                         </div>
                         <video id="cameraVideo" autoplay playsinline muted></video>
                         <canvas id="scanCanvas" style="display:none"></canvas>

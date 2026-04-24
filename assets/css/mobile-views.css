@@ -6,20 +6,21 @@
 .views-container { display: block; }
 
 /* Force scanner visible saat di dalam mobileScanContainer */
-#mobileScanContainer .grid-scan,
-#mobileScanContainer .grid-scan * { /* pastikan tidak ada display:none dari parent */ }
 #mobileScanContainer .grid-scan {
     display: block !important;
-    grid-template-columns: 1fr !important;
 }
-#mobileScanContainer .card,
-#mobileScanContainer .card-body,
-#mobileScanContainer .video-box,
-#mobileScanContainer .scan-controls,
-#mobileScanContainer .mode-btns,
-#mobileScanContainer .scan-tabs,
-#mobileScanContainer .manual-box,
-#mobileScanContainer .result-box { display: revert !important; }
+#mobileScanContainer .card { display: block !important; }
+#mobileScanContainer .card-body { display: block !important; }
+#mobileScanContainer .video-box { display: block !important; }
+#mobileScanContainer .scan-controls { display: flex !important; }
+#mobileScanContainer .mode-btns { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+#mobileScanContainer .scan-tabs { display: flex !important; gap: 6px !important; }
+#mobileScanContainer .manual-box { display: block !important; }
+#mobileScanContainer .result-box { /* keep original display */ }
+
+/* scanPlaceholder clickable */
+#mobileScanContainer #scanPlaceholder { cursor: pointer; }
+#mobileScanContainer #scanPlaceholder:active { opacity: .7; }
 
 @media(max-width: 768px) {
   /* Sembunyikan elemen desktop-only */
@@ -35,7 +36,7 @@
 
   /* ===== VIEW: BERANDA ===== */
   .v-home-header {
-    padding: 24px 20px 16px; 
+    padding: 24px 20px 16px; text-align: center;
     background: linear-gradient(135deg, #1e3a8a 0%, #0891b2 100%);
   }
   .v-home-greeting { font-size: .8rem; color: #93c5fd; font-weight: 600; }
