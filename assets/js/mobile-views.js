@@ -3,7 +3,6 @@
    ============================================ */
 
 var currentView = 'beranda';
-var scannerMoved = false;
 
 function switchView(viewName) {
     // Stop scan jika pindah dari view scan
@@ -13,8 +12,16 @@ function switchView(viewName) {
 
     currentView = viewName;
 
-    // Simpan ke localStorage agar persistent saat kembali dari halaman lain
+    // Simpan ke localStorage
     try { localStorage.setItem('absensi_view', viewName); } catch(e) {}
+
+    // Toggle scan-active class pada body
+    // Saat scan aktif, CSS akan menampilkan .desktop-content .main
+    if (viewName === 'scan') {
+        document.body.classList.add('scan-active');
+    } else {
+        document.body.classList.remove('scan-active');
+    }
 
     // Hide semua view
     document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
@@ -28,7 +35,7 @@ function switchView(viewName) {
     var activeBtn = document.querySelector('[data-view="' + viewName + '"]');
     if (activeBtn) activeBtn.classList.add('active');
 
-    // Refresh data jika diperlukan
+    // Refresh data
     if (viewName === 'rekap' || viewName === 'beranda') {
         refreshMobileStats();
     }
@@ -40,7 +47,7 @@ function switchView(viewName) {
     window.scrollTo(0, 0);
 }
 
-// === BERANDA: Donut Chart via CSS conic-gradient ===
+// === BERANDA: Donut Chart ===
 function updateDonutChart() {
     var hadirEl = document.getElementById('s-hadir');
     var terlambatEl = document.getElementById('s-terlambat');
@@ -72,14 +79,13 @@ function updateDonutChart() {
     var pctEl = document.getElementById('donutPct');
     if (pctEl) pctEl.textContent = Math.round(pHadir) + '%';
 
-    // Update stat cards di beranda
     var mh = document.getElementById('m-hadir'); if (mh) mh.textContent = hadir;
     var mt = document.getElementById('m-terlambat'); if (mt) mt.textContent = terlambat;
     var mb = document.getElementById('m-belum'); if (mb) mb.textContent = belum;
     var mto = document.getElementById('m-total'); if (mto) mto.textContent = total;
 }
 
-// === REKAP: Update bar chart ===
+// === REKAP ===
 function updateRekapBars() {
     var totalEl = document.getElementById('s-total');
     var total = totalEl ? parseInt(totalEl.textContent) || 1 : 1;
@@ -93,12 +99,8 @@ function updateRekapBars() {
         var val = srcEl ? parseInt(srcEl.textContent) || 0 : 0;
         var bar = document.getElementById('bar-' + key);
         var num = document.getElementById('barnum-' + key);
-        if (bar) {
-            var pct = Math.round((val / total) * 100);
-            bar.style.width = Math.max(pct, 2) + '%';
-        }
+        if (bar) bar.style.width = Math.max(Math.round((val / total) * 100), 2) + '%';
         if (num) num.textContent = val;
-        
         var el = document.getElementById('r-' + key);
         if (el) el.textContent = val;
     });
@@ -125,7 +127,7 @@ function refreshMobileStats() {
         .catch(function() {});
 }
 
-// === RIWAYAT: Load full log ===
+// === RIWAYAT ===
 var allLogData = [];
 
 function loadMobileLog() {
@@ -192,7 +194,7 @@ function updateRecentLog() {
     }
 }
 
-// === Mobile Clock ===
+// === Clock & Greeting ===
 function updateMobileClock() {
     var el = document.getElementById('mobileClock');
     if (el) {
@@ -201,7 +203,6 @@ function updateMobileClock() {
     }
 }
 
-// === Greeting ===
 function getGreeting() {
     var h = new Date().getHours();
     if (h < 10) return '🌅 Selamat Pagi';
@@ -210,38 +211,9 @@ function getGreeting() {
     return '🌙 Selamat Malam';
 }
 
-// === Move Scanner ke Mobile View ===
-function moveScannerToMobile() {
-    if (scannerMoved) return;
-    // Cari .grid-scan di dalam .desktop-content
-    var gridScan = document.querySelector('.desktop-content .grid-scan');
-    var container = document.getElementById('mobileScanContainer');
-    console.log('[MobileViews] moveScannerToMobile: gridScan=', !!gridScan, ', container=', !!container);
-    if (gridScan && container) {
-        container.innerHTML = '';
-        container.appendChild(gridScan);
-        // Paksa display karena mungkin parent .main punya display:none
-        gridScan.style.display = 'block';
-        gridScan.style.maxWidth = '100%';
-        gridScan.style.padding = '0';
-        scannerMoved = true;
-        console.log('[MobileViews] Scanner berhasil dipindahkan!');
-        // Re-init kamera setelah pindah
-        if (typeof loadCameras === 'function') {
-            setTimeout(loadCameras, 500);
-        }
-    } else {
-        console.warn('[MobileViews] Gagal pindahkan scanner! gridScan:', gridScan, 'container:', container);
-    }
-}
-
-// Init mobile views
+// Init
 function initMobileViews() {
     if (window.innerWidth > 768) return;
-    console.log('[MobileViews] Initializing...');
-
-    // Pindahkan scanner ke mobileScanContainer
-    moveScannerToMobile();
 
     var greetEl = document.getElementById('mobileGreeting');
     if (greetEl) greetEl.textContent = getGreeting();
@@ -257,7 +229,7 @@ function initMobileViews() {
         loadMobileLog();
     }, 1500);
 
-    // Cek localStorage untuk view persistence
+    // View persistence
     var savedView = null;
     try { savedView = localStorage.getItem('absensi_view'); } catch(e) {}
     

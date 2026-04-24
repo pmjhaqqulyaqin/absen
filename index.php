@@ -288,12 +288,8 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
     </div>
 </div>
 
-<!-- VIEW 3: SCAN QR -->
-<div id="view-scan" class="view">
-    <div id="mobileScanContainer" style="padding:12px 16px">
-        <!-- Scanner akan dipindahkan ke sini dari desktop-content saat mobile -->
-    </div>
-</div>
+<!-- VIEW 3: SCAN QR (scanner ditampilkan dari .main via CSS class 'scan-active' pada body) -->
+<div id="view-scan" class="view"></div>
 
 <!-- VIEW 4: RIWAYAT -->
 <div id="view-riwayat" class="view">

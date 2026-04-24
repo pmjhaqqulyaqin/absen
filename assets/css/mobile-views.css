@@ -5,27 +5,41 @@
 /* View Container */
 .views-container { display: block; }
 
-/* Force scanner visible saat di dalam mobileScanContainer */
-#mobileScanContainer .grid-scan {
-    display: block !important;
+/* Desktop tetap tampil normal */
+@media(min-width: 769px) {
+  .views-container { display: none !important; }
+  .desktop-content { display: block !important; }
+  .bottom-nav { display: none !important; }
 }
-#mobileScanContainer .card { display: block !important; }
-#mobileScanContainer .card-body { display: block !important; }
-#mobileScanContainer .video-box { display: block !important; }
-#mobileScanContainer .scan-controls { display: flex !important; }
-#mobileScanContainer .mode-btns { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-#mobileScanContainer .scan-tabs { display: flex !important; gap: 6px !important; }
-#mobileScanContainer .manual-box { display: block !important; }
-#mobileScanContainer .result-box { /* keep original display */ }
-
-/* scanPlaceholder clickable */
-#mobileScanContainer #scanPlaceholder { cursor: pointer; }
-#mobileScanContainer #scanPlaceholder:active { opacity: .7; }
 
 @media(max-width: 768px) {
+  /* Sembunyikan bagian desktop secara individual */
+  .desktop-content .navbar,
+  .desktop-content .hero,
+  .desktop-content .stats-bar,
+  .desktop-content .main,
+  .desktop-content .login-section,
+  .desktop-content > footer { display: none !important; }
+  
+  .views-container { display: block !important; }
+
+  /* === KUNCI: Saat body punya class scan-active, tampilkan scanner === */
+  body.scan-active .desktop-content .main {
+    display: block !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  body.scan-active .desktop-content .main .grid-scan {
+    display: block !important;
+    padding: 12px 16px !important;
+  }
+  /* Sembunyikan kolom kanan (result+log) pada mobile, hanya tampilkan scanner */
+  body.scan-active .desktop-content .main .grid-scan > div:last-child {
+    margin-top: 12px;
+  }
+
   /* Sembunyikan elemen desktop-only */
   .navbar, .hero, .stats-bar, footer { display: none !important; }
-  .main { padding: 0; max-width: 100%; }
   .grid-scan { display: block; }
   body { padding-bottom: 76px; background: #0f172a; }
 
@@ -119,34 +133,10 @@
   .v-jadwal-item .t { font-size: .65rem; color: #94a3b8; font-weight: 600; }
   .v-jadwal-item .v { font-size: .95rem; font-weight: 800; }
 
-  /* ===== VIEW: SCAN ===== */
-  .v-scan-wrapper { padding: 0; }
-  .v-scan-mode { display: flex; gap: 8px; padding: 12px 16px; }
-  .v-scan-mode button { flex: 1; padding: 14px; border: 2px solid; border-radius: 12px; font-weight: 800; font-size: .9rem; cursor: pointer; transition: .15s; }
-  .v-scan-mode .active-masuk { background: #16a34a; border-color: #16a34a; color: white; }
-  .v-scan-mode .inactive { background: transparent; border-color: rgba(255,255,255,.15); color: #64748b; }
-  .v-scan-mode .active-pulang { background: #dc2626; border-color: #dc2626; color: white; }
-
-  .v-scan-camera { margin: 0 16px; border-radius: 16px; overflow: hidden; background: #111; position: relative; }
-  .v-scan-camera #scanPlaceholder { height: 55vh !important; }
-  .v-scan-camera #cameraVideo { max-height: 60vh !important; height: auto; object-fit: cover; }
-
-  .v-scan-controls { display: flex; gap: 8px; padding: 10px 16px; }
-  .v-scan-controls button, .v-scan-controls select { padding: 14px; border-radius: 12px; font-weight: 700; font-size: .9rem; }
-
-  /* Result Overlay */
-  .v-result-overlay {
-    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 76px;
-    background: rgba(0,0,0,.7); backdrop-filter: blur(5px);
-    z-index: 500; align-items: center; justify-content: center;
-  }
-  .v-result-overlay.show { display: flex; }
-  .v-result-card {
-    background: #1e293b; border-radius: 20px; padding: 32px 24px;
-    text-align: center; width: 85%; max-width: 320px; animation: resultPop .3s ease;
-    border: 1px solid rgba(255,255,255,.1);
-  }
-  @keyframes resultPop { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  /* ===== VIEW: SCAN (menggunakan desktop .main langsung) ===== */
+  /* scanPlaceholder clickable */
+  #scanPlaceholder { cursor: pointer; }
+  #scanPlaceholder:active { opacity: .7; }
 
   /* ===== VIEW: RIWAYAT ===== */
   .v-riwayat-header { padding: 20px 20px 12px; display: flex; align-items: center; justify-content: space-between; }
@@ -197,23 +187,4 @@
   .bnav-item.active i { transform: scale(1.15); }
   .bnav-dot { width: 4px; height: 4px; border-radius: 50%; background: #38bdf8; margin-top: 2px; display: none; }
   .bnav-item.active .bnav-dot { display: block; }
-}
-
-/* Desktop tetap tampil normal */
-@media(min-width: 769px) {
-  .views-container { display: none !important; }
-  .desktop-content { display: block !important; }
-  .bottom-nav { display: none !important; }
-}
-
-@media(max-width: 768px) {
-  /* Sembunyikan bagian-bagian desktop secara individual, BUKAN seluruh container */
-  .desktop-content .navbar,
-  .desktop-content .hero,
-  .desktop-content .stats-bar,
-  .desktop-content .main,
-  .desktop-content .login-section,
-  .desktop-content > footer { display: none !important; }
-  
-  .views-container { display: block !important; }
 }
