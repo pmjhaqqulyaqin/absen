@@ -5,7 +5,7 @@ if (!defined('DB_HOST')) {
     require_once __DIR__.'/config.php';
 }
 ?>
-<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/mobile-views.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>assets/css/mobile-views.css?v=<?= time() ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 @media(max-width: 768px) {

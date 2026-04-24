@@ -21,7 +21,7 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
     <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/qrcode.svg">
     <title><?= htmlspecialchars($pengaturan['nama_sekolah']) ?> - Absensi Digital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/mobile-views.css">
+    <link rel="stylesheet" href="assets/css/mobile-views.css?v=<?= time() ?>">
     <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:white;min-height:100vh}
@@ -837,6 +837,6 @@ window.addEventListener('beforeunload',stopScan);
 </script>
 
 <!-- Mobile Views JS -->
-<script src="assets/js/mobile-views.js"></script>
+<script src="assets/js/mobile-views.js?v=<?= time() ?>"></script>
 </body>
 </html>
