@@ -288,8 +288,8 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
     </div>
 </div>
 
-<!-- VIEW 3: SCAN QR (scanner ditampilkan dari .main via CSS class 'scan-active' pada body) -->
-<div id="view-scan" class="view"></div>
+<!-- VIEW 3: SCAN QR (scanner ditampilkan dari .main via CSS class 'scan-active') -->
+<div id="view-scan" class="view" style="min-height:0;padding:0"></div>
 
 <!-- VIEW 4: RIWAYAT -->
 <div id="view-riwayat" class="view">
@@ -311,8 +311,19 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
 <!-- VIEW 5: AKUN -->
 <div id="view-akun" class="view">
     <div class="v-akun-header">
-        <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="v-akun-logo" alt="Logo">
+        <?php
+        // Cari file logo terbaru di uploads/logo/
+        $logo_file = '';
+        if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])) {
+            $logo_file = $pengaturan['logo'];
+        } else {
+            // Fallback: cari file logo_*.png terbaru
+            $logos = glob(__DIR__.'/uploads/logo/logo_*.png');
+            if ($logos) { rsort($logos); $logo_file = basename($logos[0]); }
+        }
+        ?>
+        <?php if ($logo_file): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="v-akun-logo" alt="Logo">
         <?php else: ?>
             <div class="v-akun-logo-icon"><i class="fas fa-school"></i></div>
         <?php endif; ?>
@@ -425,6 +436,8 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
                             <p style="font-size:.85rem">Tap untuk <strong style="color:white">Mulai Scan</strong></p>
                         </div>
                         <video id="cameraVideo" autoplay playsinline muted></video>
+                        <!-- Tombol Close Kamera (muncul saat kamera aktif) -->
+                        <button id="closeCamBtn" onclick="stopScan()" style="display:none;position:absolute;top:10px;left:10px;background:rgba(220,38,38,0.85);border:none;color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;z-index:20;font-size:1.1rem;backdrop-filter:blur(4px);box-shadow:0 2px 8px rgba(0,0,0,.4)"><i class="fas fa-times"></i></button>
                         <canvas id="scanCanvas" style="display:none"></canvas>
                         <div id="scanOverlay">
                             <div class="scan-frame"><div class="scan-line"></div></div>
@@ -627,6 +640,7 @@ async function startScan() {
         document.getElementById('scanOverlay').style.display='block';
         document.getElementById('startBtn').style.display='none';
         document.getElementById('stopBtn').style.display='';
+        var closeBtn=document.getElementById('closeCamBtn'); if(closeBtn) closeBtn.style.display='block';
         scanning=true; dbg('📷 Kamera aktif...');
         startLoop(v);
     } catch(e) {
@@ -684,6 +698,7 @@ function stopScan() {
     document.getElementById('scanOverlay').style.display='none';
     document.getElementById('startBtn').style.display='';
     document.getElementById('stopBtn').style.display='none';
+    var closeBtn=document.getElementById('closeCamBtn'); if(closeBtn) closeBtn.style.display='none';
     dbg('');
 }
 
