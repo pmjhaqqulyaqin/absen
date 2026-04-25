@@ -1,8 +1,6 @@
-# Uploads folder (foto siswa, logo, dsb)
+# Uploads folder (foto siswa — data user, jangan commit)
 uploads/foto/*
-uploads/logo/*
 !uploads/foto/.gitkeep
-!uploads/logo/.gitkeep
 
 # Environment secrets
 .env
