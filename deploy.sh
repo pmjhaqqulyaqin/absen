@@ -1,53 +1,63 @@
 #!/bin/bash
-
-# Pastikan script berhenti jika ada error
 set -e
 
 echo "==========================================="
-echo "🚀 Memulai Deployment Absensi Digital..."
+echo "🚀 Deployment Absensi Digital"
 echo "==========================================="
 
-echo "🔐 0. Memeriksa konfigurasi environment (.env)..."
+# ---- ENV ----
 if [ ! -f .env ]; then
-    echo "   ⚠️ File .env tidak ditemukan. Membuat dari .env.example..."
+    echo "⚠️  File .env tidak ditemukan. Membuat dari .env.example..."
     cp .env.example .env
-
-    # Generate random password untuk keamanan
     RANDOM_ROOT=$(cat /dev/urandom 2>/dev/null | tr -dc 'a-zA-Z0-9' 2>/dev/null | fold -w 24 2>/dev/null | head -n 1 || echo "absen_root_$(date +%s)")
     RANDOM_PASS=$(cat /dev/urandom 2>/dev/null | tr -dc 'a-zA-Z0-9' 2>/dev/null | fold -w 20 2>/dev/null | head -n 1 || echo "absen_db_$(date +%s)")
-
     sed -i "s/MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=${RANDOM_ROOT}/g" .env
     sed -i "s/MYSQL_PASSWORD=.*/MYSQL_PASSWORD=${RANDOM_PASS}/g" .env
-
-    echo "   ✅ File .env dibuat dengan password unik."
-else
-    echo "   ✅ File .env sudah ada."
+    echo "✅ .env dibuat."
 fi
 
-echo "📥 1. Menarik pembaruan kode terbaru dari GitHub..."
+# ---- GIT PULL ----
+echo "📥 1. Menarik kode terbaru..."
 git fetch origin
 git reset --hard origin/main
+echo "✅ Kode diperbarui."
 
-echo "🛠️  2. Membangun ulang Docker Images..."
+# ---- CEK APAKAH PERLU REBUILD ----
+# Rebuild hanya jika Dockerfile, nginx.conf, atau supervisord.conf berubah
+NEEDS_REBUILD=false
+CHANGED=$(git diff HEAD~1 --name-only 2>/dev/null || echo "")
 
-# Build PHP + Nginx container
-echo "   📦 Building Absensi App (PHP + Nginx)..."
-docker compose build --no-cache absen-app
+if echo "$CHANGED" | grep -qE "^(Dockerfile|nginx.conf|supervisord.conf|docker-compose.yml)$"; then
+    NEEDS_REBUILD=true
+fi
 
-echo "🔄 3. Menghentikan container lama dan menjalankan yang baru..."
-docker compose up -d --force-recreate
+# Jika container belum ada, perlu build
+if ! docker compose ps --status running 2>/dev/null | grep -q "absen-app"; then
+    NEEDS_REBUILD=true
+fi
 
-echo "⏳ 4. Menunggu database siap..."
-sleep 10
+if [ "$NEEDS_REBUILD" = true ]; then
+    echo "🛠️  2. Perubahan infrastruktur terdeteksi → Rebuild Docker..."
+    docker compose build --no-cache absen-app
+    docker compose up -d --force-recreate
+    echo "⏳ Menunggu database..."
+    sleep 8
+else
+    echo "⚡ 2. Hanya perubahan kode → Restart cepat (tanpa rebuild)..."
+    # Karena bind mount, kode sudah ter-update otomatis dari git pull
+    # Restart PHP-FPM agar cache PHP ter-clear
+    docker exec absen-app sh -c "kill -USR2 1" 2>/dev/null || docker compose restart absen-app
+fi
 
-echo "📂 5. Memastikan permission folder uploads..."
-docker exec absen-app sh -c "chown -R nobody:nobody /var/www/html/uploads && chmod -R 775 /var/www/html/uploads" 2>/dev/null || true
+# ---- PERMISSION ----
+echo "📂 3. Memastikan permission..."
+docker exec absen-app sh -c "chown -R nobody:nobody /var/www/html/uploads 2>/dev/null; chmod -R 775 /var/www/html/uploads 2>/dev/null" || true
 
-echo "🧹 6. Membersihkan image yang tidak terpakai..."
-docker image prune -f
+# ---- CLEANUP ----
+echo "🧹 4. Cleanup..."
+docker image prune -f 2>/dev/null || true
 
 echo "==========================================="
-echo "✅ Deployment Absensi Digital selesai!"
-echo "   🌐 Aplikasi: http://localhost:18082"
-echo "   🗄️  Database: localhost:18083"
+echo "✅ Deploy selesai!"
+echo "   🌐 https://absen.mandualotim.sch.id"
 echo "==========================================="

@@ -9,7 +9,6 @@ services:
     container_name: absen-app
     restart: unless-stopped
     ports:
-      # Port 18082 — unik, tidak bertabrakan dengan Lapkin (18080/18081)
       - "18082:80"
     environment:
       - TZ=${TZ:-Asia/Makassar}
@@ -17,8 +16,12 @@ services:
       - MYSQL_USER=${MYSQL_USER:-mandalo1_presensi}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-manoke2004}
     volumes:
-      # Persistent uploads (foto siswa, logo sekolah)
-      - absen_uploads:/var/www/html/uploads
+      # BIND MOUNT: source code langsung dari host
+      # Perubahan kode = langsung terlihat, TANPA rebuild Docker
+      - ./:/var/www/html
+      # Persistent uploads (foto siswa yg diupload user, terpisah dari git)
+      - absen_uploads_data:/var/www/html/uploads/foto
+      - absen_uploads_excel:/var/www/html/uploads/excel
     depends_on:
       absen-db:
         condition: service_healthy
@@ -36,10 +39,8 @@ services:
       TZ: ${TZ:-Asia/Makassar}
     volumes:
       - absen_dbdata:/var/lib/mysql
-      # Auto-import schema saat pertama kali container dibuat
       - ./database:/docker-entrypoint-initdb.d
     ports:
-      # Port 18083 — untuk akses langsung (debug/backup), tidak wajib di-expose
       - "18083:3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
@@ -50,5 +51,7 @@ services:
 volumes:
   absen_dbdata:
     name: absen_mysql_data
-  absen_uploads:
-    name: absen_uploads_data
+  absen_uploads_data:
+    name: absen_uploads_foto
+  absen_uploads_excel:
+    name: absen_uploads_excel

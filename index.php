@@ -311,22 +311,7 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
 <!-- VIEW 5: AKUN -->
 <div id="view-akun" class="view">
     <div class="v-akun-header">
-        <?php
-        // Cari file logo terbaru di uploads/logo/
-        $logo_file = '';
-        if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])) {
-            $logo_file = $pengaturan['logo'];
-        } else {
-            // Fallback: cari file logo_*.png terbaru
-            $logos = glob(__DIR__.'/uploads/logo/logo_*.png');
-            if ($logos) { rsort($logos); $logo_file = basename($logos[0]); }
-        }
-        ?>
-        <?php if ($logo_file): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="v-akun-logo" alt="Logo">
-        <?php else: ?>
-            <div class="v-akun-logo-icon"><i class="fas fa-school"></i></div>
-        <?php endif; ?>
+        <img src="<?= BASE_URL ?>uploads/logo/logo_1771814669.png" class="v-akun-logo" alt="Logo MAN 2 Lombok Timur">
         <div class="v-akun-school"><?= htmlspecialchars($pengaturan['nama_sekolah']) ?></div>
         <div class="v-akun-sub">Sistem Absensi Digital</div>
     </div>
