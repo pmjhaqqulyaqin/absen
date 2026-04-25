@@ -27,6 +27,7 @@
     </a>
 </div>
 
+<?php include __DIR__ . '/pwa_banner.php'; ?>
 <script src="<?= BASE_URL ?>assets/js/app.js"></script>
 </body>
 </html>

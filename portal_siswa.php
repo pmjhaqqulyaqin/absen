@@ -30,6 +30,43 @@ if (isset($_GET['logout'])) { session_destroy(); header('Location: '.BASE_URL.'p
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: Theme & Status Bar -->
+    <meta name="theme-color" content="#1a2332">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Absensi MAN2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Absensi MAN2">
+    <meta name="msapplication-TileColor" content="#1a2332">
+    <meta name="msapplication-TileImage" content="assets/pwa/pwa-icon-192x192.png">
+
+    <!-- PWA: Web App Manifest & Apple Touch Icon -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/pwa-icon-180x180.png">
+    
+    <script>
+      window.__pwaInstallEvent = null;
+      window.__pwaInstallCallbacks = [];
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaInstallEvent = e;
+        console.log('[PWA] beforeinstallprompt captured early');
+        window.__pwaInstallCallbacks.forEach(function(cb) { cb(e); });
+      });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('<?= BASE_URL ?>sw.js')
+            .then(function(reg) {
+              console.log('[PWA] Service Worker registered, scope:', reg.scope);
+              setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+            })
+            .catch(function(err) {
+              console.warn('[PWA] Service Worker registration failed:', err);
+            });
+        });
+      }
+    </script>
     <title>Portal Siswa - <?= htmlspecialchars($siswa['nama']) ?></title>
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -151,5 +188,6 @@ if (isset($_GET['logout'])) { session_destroy(); header('Location: '.BASE_URL.'p
     <?php endif; ?>
 
 </div>
+<?php include 'includes/pwa_banner.php'; ?>
 </body>
 </html>

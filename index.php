@@ -16,9 +16,41 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#1a2332">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Absensi MAN2">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Absensi MAN2">
+    <meta name="msapplication-TileColor" content="#1a2332">
+    <meta name="msapplication-TileImage" content="assets/pwa/pwa-icon-192x192.png">
+
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/qrcode.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/pwa-icon-180x180.png">
+    
+    <script>
+      window.__pwaInstallEvent = null;
+      window.__pwaInstallCallbacks = [];
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaInstallEvent = e;
+        console.log('[PWA] beforeinstallprompt captured early');
+        window.__pwaInstallCallbacks.forEach(function(cb) { cb(e); });
+      });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) {
+              console.log('[PWA] Service Worker registered, scope:', reg.scope);
+              setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+            })
+            .catch(function(err) {
+              console.warn('[PWA] Service Worker registration failed:', err);
+            });
+        });
+      }
+    </script>
     <title><?= htmlspecialchars($pengaturan['nama_sekolah']) ?> - Absensi Digital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/mobile-views.css?v=<?= time() ?>">
@@ -825,18 +857,13 @@ function beep(freq,dur){
     }catch(e){}
 }
 
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(e => console.log('SW Reg Failed', e));
-    });
-}
-
 document.addEventListener('click',function(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();});
 window.addEventListener('beforeunload',stopScan);
 </script>
 
 <!-- Mobile Views JS -->
 <script src="assets/js/mobile-views.js?v=<?= time() ?>"></script>
+
+<?php include 'includes/pwa_banner.php'; ?>
 </body>
 </html>
