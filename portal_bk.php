@@ -182,8 +182,10 @@ tr:nth-child(even) td.sticky{background:#f8fafc}
 <!-- ═══════════ SIDEBAR ═══════════ -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-        <?php if (!empty($pengaturan['logo']) && file_exists('uploads/logo/'.$pengaturan['logo'])): ?>
-        <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="school-logo">
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+        <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="school-logo" alt="Logo MAN 2 Lombok Timur">
         <?php else: ?>
         <div style="font-size:1.8rem;margin-bottom:8px">🏫</div>
         <?php endif; ?>
@@ -377,8 +379,10 @@ elseif ($page === 'rekap_harian'):
 ?>
 <!-- Print header -->
 <div class="print-header">
-    <?php if (!empty($pengaturan['logo']) && file_exists('uploads/logo/'.$pengaturan['logo'])): ?>
-    <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" style="height:56px;margin-bottom:6px">
+    <?php
+    $logo_print = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+    if (!empty($logo_print) && file_exists(__DIR__.'/uploads/logo/'.$logo_print)): ?>
+    <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_print ?>" style="height:56px;margin-bottom:6px" alt="Logo">
     <?php endif; ?>
     <div style="font-size:1.1rem;font-weight:700;text-transform:uppercase"><?= htmlspecialchars($pengaturan['nama_sekolah'] ?? '') ?></div>
     <div style="font-size:.8rem"><?= htmlspecialchars($pengaturan['alamat'] ?? '') ?></div>
@@ -529,8 +533,10 @@ elseif ($page === 'rekap_bulanan'):
 ?>
 <!-- Print header -->
 <div class="print-header">
-    <?php if (!empty($pengaturan['logo']) && file_exists('uploads/logo/'.$pengaturan['logo'])): ?>
-    <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" style="height:56px;margin-bottom:6px">
+    <?php
+    $logo_print2 = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+    if (!empty($logo_print2) && file_exists(__DIR__.'/uploads/logo/'.$logo_print2)): ?>
+    <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_print2 ?>" style="height:56px;margin-bottom:6px" alt="Logo">
     <?php endif; ?>
     <div style="font-size:1.1rem;font-weight:700;text-transform:uppercase"><?= htmlspecialchars($pengaturan['nama_sekolah'] ?? '') ?></div>
     <div style="font-size:.8rem"><?= htmlspecialchars($pengaturan['alamat'] ?? '') ?></div>

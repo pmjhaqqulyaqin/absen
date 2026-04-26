@@ -343,7 +343,13 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
 <!-- VIEW 5: AKUN -->
 <div id="view-akun" class="view">
     <div class="v-akun-header">
-        <img src="<?= BASE_URL ?>uploads/logo/logo_1771814669.png" class="v-akun-logo" alt="Logo MAN 2 Lombok Timur">
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="v-akun-logo" alt="Logo MAN 2 Lombok Timur">
+        <?php else: ?>
+            <div style="width:72px;height:72px;background:linear-gradient(135deg,#3b82f6,#0891b2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto"><i class="fas fa-school"></i></div>
+        <?php endif; ?>
         <div class="v-akun-school"><?= htmlspecialchars($pengaturan['nama_sekolah']) ?></div>
         <div class="v-akun-sub">Sistem Absensi Digital</div>
     </div>
@@ -369,8 +375,10 @@ $tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date(
 <!-- NAVBAR -->
 <nav class="navbar">
     <a href="index.php" class="navbar-brand">
-        <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="navbar-logo" alt="Logo">
+        <?php
+        $logo_nav = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_nav) && file_exists(__DIR__.'/uploads/logo/'.$logo_nav)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_nav ?>" class="navbar-logo" alt="Logo MAN 2 Lombok Timur">
         <?php else: ?>
             <div class="navbar-logo-icon"><i class="fas fa-school"></i></div>
         <?php endif; ?>

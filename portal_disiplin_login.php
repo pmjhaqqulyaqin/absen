@@ -52,8 +52,10 @@ h2{color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px}
 </head>
 <body>
 <div class="card">
-    <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-    <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="logo" alt="Logo">
+    <?php
+    $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+    if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+    <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="logo" alt="Logo MAN 2 Lombok Timur">
     <?php else: ?>
     <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
     <?php endif; ?>

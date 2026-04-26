@@ -194,8 +194,10 @@ $mode = $_GET['mode'] ?? 'pin'; // pin | password
 <div class="login-card">
     <!-- Header -->
     <div class="card-header">
-        <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="school-logo" alt="Logo">
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="school-logo" alt="Logo MAN 2 Lombok Timur">
         <?php else: ?>
             <div class="school-logo-icon"><i class="fas fa-school"></i></div>
         <?php endif; ?>

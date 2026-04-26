@@ -55,8 +55,10 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <?php if (!empty($pengaturan['logo']) && file_exists('uploads/logo/' . $pengaturan['logo'])): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" alt="Logo" class="school-logo">
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/../uploads/logo/'.$logo_file)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" alt="Logo MAN 2 Lombok Timur" class="school-logo">
         <?php else: ?>
             <div class="logo-placeholder"><i class="fas fa-school"></i></div>
         <?php endif; ?>

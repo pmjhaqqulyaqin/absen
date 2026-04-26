@@ -113,8 +113,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135d
 <body>
 <div class="card">
     <div class="card-top">
-        <?php if (!empty($pengaturan['logo']) && file_exists('uploads/logo/'.$pengaturan['logo'])): ?>
-            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="logo">
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="logo" alt="Logo MAN 2 Lombok Timur">
         <?php else: ?>
             <div class="logo-icon"><i class="fas fa-school"></i></div>
         <?php endif; ?>

@@ -191,8 +191,10 @@ include 'includes/header.php';
 
 <!-- ====== HEADER PRINT ====== -->
 <div class="print-header" style="display:none;text-align:center;margin-bottom:20px">
-    <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-        <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" style="height:70px;margin-bottom:8px">
+    <?php
+    $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+    if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+        <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" style="height:70px;margin-bottom:8px" alt="Logo">
     <?php endif; ?>
     <div style="font-size:1.2rem;font-weight:700;text-transform:uppercase"><?= htmlspecialchars($pengaturan['nama_sekolah']) ?></div>
     <div style="font-size:.85rem"><?= htmlspecialchars($pengaturan['alamat'] ?? '') ?></div>

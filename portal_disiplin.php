@@ -212,8 +212,10 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:white;min-height
 
 <!-- Navbar -->
 <nav class="navbar">
-    <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
-    <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:white;padding:2px">
+    <?php
+    $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+    if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+    <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" style="width:34px;height:34px;border-radius:8px;object-fit:contain;background:white;padding:2px" alt="Logo">
     <?php else: ?>
     <div style="width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center">
         <i class="fas fa-shield-alt"></i>

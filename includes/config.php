@@ -11,6 +11,7 @@ define('DB_USER', $is_docker ? getenv('MYSQL_USER') : 'mandalo1_presensi');
 define('DB_PASS', $is_docker ? getenv('MYSQL_PASSWORD') : 'manoke2004');
 define('DB_NAME', $is_docker ? getenv('MYSQL_DATABASE') : 'mandalo1_presensi');
 define('BASE_URL', '/');
+define('LOGO_FILE', 'logo_1771815929.png'); // Logo MAN 2 Lombok Timur (hardcoded)
 
 date_default_timezone_set('Asia/Makassar'); // WITA
 

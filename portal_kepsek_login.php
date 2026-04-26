@@ -51,6 +51,7 @@ $show_pin_mode = $kepsek_pin_col;
     .login-wrap{width:100%;max-width:420px}
     .login-header{text-align:center;margin-bottom:32px}
     .icon-wrap{width:80px;height:80px;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;color:white;box-shadow:0 8px 24px rgba(124,58,237,.4)}
+    .school-logo{width:80px;height:80px;border-radius:20px;object-fit:contain;background:white;padding:6px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(124,58,237,.4)}
     .login-header h1{color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px}
     .login-header p{color:#a5b4fc;font-size:.85rem}
     .card{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:32px}
@@ -89,7 +90,13 @@ $show_pin_mode = $kepsek_pin_col;
 <body>
 <div class="login-wrap">
     <div class="login-header">
-        <div class="icon-wrap"><i class="fas fa-user-tie"></i></div>
+        <?php
+        $logo_file = defined('LOGO_FILE') ? LOGO_FILE : ($pengaturan['logo'] ?? '');
+        if (!empty($logo_file) && file_exists(__DIR__.'/uploads/logo/'.$logo_file)): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $logo_file ?>" class="school-logo" alt="Logo MAN 2 Lombok Timur">
+        <?php else: ?>
+            <div class="icon-wrap"><i class="fas fa-user-tie"></i></div>
+        <?php endif; ?>
         <h1>Portal Kepala Sekolah</h1>
         <p>Masuk untuk melihat rekap absensi siswa</p>
     </div>
