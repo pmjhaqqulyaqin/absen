@@ -1,0 +1,115 @@
+[06-Aug-2026 20:24:59 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 845
+[06-Aug-2026 20:24:59 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 882
+[06-Aug-2026 20:25:21 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 845
+[06-Aug-2026 20:25:21 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 882
+[06-Aug-2026 20:27:32 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 845
+[06-Aug-2026 20:27:32 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 882
+[06-Aug-2026 20:27:37 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 845
+[06-Aug-2026 20:27:37 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 882
+[06-Aug-2026 20:29:22 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 845
+[06-Aug-2026 20:29:22 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 882
+[06-Aug-2026 20:33:37 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 848
+[06-Aug-2026 20:33:37 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 885
+[06-Aug-2026 22:01:23 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 940
+[06-Aug-2026 22:01:23 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 977
+[06-Aug-2026 22:03:02 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 940
+[06-Aug-2026 22:03:02 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 977
+[07-Aug-2026 07:01:30 Asia/Jakarta] PHP Warning:  Undefined property: mysqli::$real_escape_string in /home/login276/public_html/portal_disiplin.php on line 195
+[07-Aug-2026 07:03:10 Asia/Jakarta] PHP Warning:  Undefined property: mysqli::$real_escape_string in /home/login276/public_html/portal_disiplin.php on line 195
+[07-Aug-2026 07:06:33 Asia/Jakarta] PHP Warning:  Undefined property: mysqli::$real_escape_string in /home/login276/public_html/portal_disiplin.php on line 195
+[07-Aug-2026 07:55:09 Asia/Jakarta] PHP Warning:  Undefined array key "nama_jenis" in /home/login276/public_html/pelanggaran.php on line 657
+[07-Aug-2026 08:00:57 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/login276/public_html/portal_bk.php:98
+Stack trace:
+#0 {main}
+  thrown in /home/login276/public_html/portal_bk.php on line 98
+[07-Aug-2026 08:00:59 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/login276/public_html/portal_bk.php:98
+Stack trace:
+#0 {main}
+  thrown in /home/login276/public_html/portal_bk.php on line 98
+[07-Aug-2026 08:01:03 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/login276/public_html/portal_bk.php:98
+Stack trace:
+#0 {main}
+  thrown in /home/login276/public_html/portal_bk.php on line 98
+[07-Aug-2026 08:01:36 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/login276/public_html/portal_bk.php:98
+Stack trace:
+#0 {main}
+  thrown in /home/login276/public_html/portal_bk.php on line 98
+[07-Aug-2026 09:38:48 Asia/Jakarta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/login276/public_html/portal_disiplin.php:214) in /home/login276/public_html/portal_disiplin.php on line 862
+[07-Aug-2026 09:38:48 Asia/Jakarta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/login276/public_html/portal_disiplin.php:214) in /home/login276/public_html/portal_disiplin.php on line 880
+[07-Aug-2026 10:02:53 Asia/Jakarta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/login276/public_html/portal_disiplin.php:214) in /home/login276/public_html/portal_disiplin.php on line 880
+[07-Aug-2026 10:02:53 Asia/Jakarta] PHP Warning:  Cannot modify header information - headers already sent by (output started at /home/login276/public_html/portal_disiplin.php:214) in /home/login276/public_html/portal_disiplin.php on line 862
+[07-Aug-2026 10:37:21 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 1000
+[07-Aug-2026 10:37:21 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 1037
+[07-Aug-2026 10:57:16 Asia/Jakarta] PHP Warning:  Undefined variable $nm_sek in /home/login276/public_html/portal_bk.php on line 1000
+[07-Aug-2026 10:57:16 Asia/Jakarta] PHP Warning:  Undefined variable $tgl_cetak in /home/login276/public_html/portal_bk.php on line 1037
+[08-Aug-2026 12:35:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:35:44 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:35:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:35:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:35:46 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:36:02 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:36:19 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:46:41 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:46:43 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/index.php(8): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:50:39 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/dashboard.php(7): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:51:11 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/dashboard.php(7): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 12:51:16 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Call to a member function fetch_all() on bool in /home/login276/public_html/includes/config.php:85
+Stack trace:
+#0 /home/login276/public_html/dashboard.php(7): get_stats_hari_ini()
+#1 {main}
+  thrown in /home/login276/public_html/includes/config.php on line 85
+[08-Aug-2026 15:32:00 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:32:14 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:32:21 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:32:30 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:32:49 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:33:09 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:34:12 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:36:23 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:36:35 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:36:39 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85
+[08-Aug-2026 15:36:51 Asia/Jakarta] PHP Warning:  Undefined array key "keterangan" in /home/login276/public_html/tingkat.php on line 85

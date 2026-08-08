@@ -1,0 +1,587 @@
+<?php
+require_once 'includes/config.php';
+
+// Redirect jika sudah login admin
+if (isset($_SESSION['admin_id'])) { header('Location: dashboard.php'); exit; }
+
+$pengaturan = get_pengaturan();
+$stats = get_stats_hari_ini();
+
+$hari  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+$bulan = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+$tgl_indo = $hari[date('w')].', '.date('d').' '.$bulan[(int)date('n')].' '.date('Y');
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($pengaturan['nama_sekolah']) ?> - Absensi Digital</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:white;min-height:100vh}
+
+    /* NAVBAR */
+    .navbar{background:rgba(15,23,42,.96);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);padding:0 24px;height:64px;display:flex;align-items:center;position:sticky;top:0;z-index:100;gap:12px}
+    .navbar-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:white}
+    .navbar-logo{width:38px;height:38px;border-radius:10px;object-fit:contain;background:white;padding:3px}
+    .navbar-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#3b82f6,#0891b2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+    .navbar-title{font-weight:800;font-size:.95rem;line-height:1.2}
+    .navbar-sub{font-size:.68rem;color:#94a3b8}
+    .navbar-clock{margin-left:auto;font-size:1.3rem;font-weight:800;font-family:monospace;color:#38bdf8;letter-spacing:2px;white-space:nowrap}
+    .btn-nav{padding:8px 16px;border-radius:10px;font-weight:700;font-size:.82rem;text-decoration:none;border:none;cursor:pointer;transition:.2s}
+    .btn-nav:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-login-nav{background:linear-gradient(135deg,#3b82f6,#0891b2);color:white}
+    .btn-kepsek-nav{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white}
+    .btn-disiplin-nav{background:linear-gradient(135deg,#f59e0b,#d97706);color:white}
+    .btn-bk-nav{background:linear-gradient(135deg,#059669,#047857);color:white}
+    @media(max-width:480px){.btn-kepsek-txt{display:none}.btn-bk-txt{display:none}.btn-disiplin-txt{display:none}}
+
+    /* HERO */
+    .hero{position:relative;overflow:hidden;min-height:300px}
+    .hero-bg-grad{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1e3a8a,#0891b2,#0f172a)}
+    .hero-content{position:relative;z-index:2;padding:48px 24px 36px;text-align:center}
+    .hero-title{font-size:clamp(1.3rem,3.5vw,2rem);font-weight:900;margin-bottom:8px}
+    .hero-sub{color:#cbd5e1;font-size:.9rem;margin-bottom:18px}
+    .hero-date{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);display:inline-block;padding:7px 18px;border-radius:30px;font-size:.85rem;font-weight:600}
+
+    /* STATS */
+    .stats-bar{background:#1e293b;border-bottom:1px solid rgba(255,255,255,.06)}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));max-width:900px;margin:0 auto}
+    .stat-item{padding:18px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.06)}
+    .stat-item:last-child{border-right:none}
+    .stat-num{font-size:1.8rem;font-weight:900;line-height:1}
+    .stat-lbl{font-size:.68rem;color:#94a3b8;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .c-total{color:#38bdf8}.c-hadir{color:#4ade80}.c-terlambat{color:#fb923c}
+    .c-alpa{color:#f87171}.c-sakit{color:#60a5fa}.c-izin{color:#c084fc}.c-bolos{color:#f472b6}
+
+    /* LAYOUT */
+    .main{max-width:980px;margin:0 auto;padding:32px 20px}
+    .grid-scan{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    @media(max-width:700px){.grid-scan{grid-template-columns:1fr}}
+
+    /* SCANNER CARD */
+    .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden}
+    .card-header{padding:16px 20px;font-weight:700;font-size:.9rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px}
+    .card-body{padding:20px}
+
+    .mode-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .mode-btn{padding:10px;border:2px solid;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .mode-masuk{background:#16a34a;border-color:#16a34a;color:white}
+    .mode-masuk.inactive{background:transparent;border-color:rgba(255,255,255,.15);color:#94a3b8}
+    .mode-pulang{background:#dc2626;border-color:#dc2626;color:white}
+    .mode-pulang.inactive{background:transparent;border-color:rgba(255,255,255,.15);color:#94a3b8}
+
+    .mode-label{text-align:center;font-size:.8rem;font-weight:700;margin-bottom:12px;padding:6px;border-radius:8px}
+    .mode-label.masuk{color:#4ade80;background:rgba(74,222,128,.1)}
+    .mode-label.pulang{color:#f87171;background:rgba(248,113,113,.1)}
+
+    .scan-tabs{display:flex;gap:6px;margin-bottom:12px}
+    .scan-tab{flex:1;padding:8px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:transparent;color:#94a3b8;font-size:.78rem;font-weight:600;cursor:pointer;transition:.2s}
+    .scan-tab.active{background:#3b82f6;border-color:#3b82f6;color:white}
+
+    .video-box{background:#111;border-radius:12px;overflow:hidden;position:relative}
+    #scanPlaceholder{height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.3)}
+    #cameraVideo{width:100%;max-height:260px;object-fit:cover;display:none}
+    #scanOverlay{display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+    .scan-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;max-width:220px;height:60%;max-height:180px;border:3px solid #22c55e;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.45)}
+    .scan-line{position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#22c55e,transparent);animation:scanline 1.5s ease-in-out infinite}
+    .scan-hint{position:absolute;bottom:8px;width:100%;text-align:center;color:white;font-size:.75rem;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+    #detectFlash{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(34,197,94,.35);pointer-events:none}
+    @keyframes scanline{0%{top:0}50%{top:calc(100% - 3px)}100%{top:0}}
+
+    .scan-controls{display:flex;gap:8px;margin-top:10px}
+    .btn-scan{flex:1;padding:10px;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.2s}
+    .btn-start{background:#16a34a;color:white}.btn-stop{background:#dc2626;color:white;display:none}
+    .btn-scan:hover{opacity:.9}
+
+    .usb-box{background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.15);border-radius:12px;padding:24px;text-align:center}
+    .usb-box input{width:100%;padding:12px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:10px;color:white;font-size:1rem;font-weight:700;letter-spacing:2px;text-align:center;margin-top:12px;outline:none}
+    .usb-box input:focus{border-color:#3b82f6}
+    .usb-box input::placeholder{color:rgba(255,255,255,.3);letter-spacing:0;font-weight:400}
+
+    .manual-box{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+    .manual-box label{display:block;font-size:.78rem;color:#94a3b8;margin-bottom:6px;font-weight:600}
+    .manual-row{display:flex;gap:8px}
+    .manual-row input{flex:1;padding:10px 12px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.1);border-radius:10px;color:white;font-size:.9rem;outline:none}
+    .manual-row input:focus{border-color:#3b82f6}
+    .manual-row input::placeholder{color:rgba(255,255,255,.3)}
+    .btn-cari{padding:10px 14px;background:#3b82f6;color:white;border:none;border-radius:10px;cursor:pointer;font-weight:700}
+
+    /* RESULT */
+    .result-box{border-radius:14px;padding:24px;text-align:center;margin-bottom:16px;display:none}
+    .result-box.success-hadir{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25)}
+    .result-box.success-terlambat{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.25)}
+    .result-box.success-pulang{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25)}
+    .result-box.error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25)}
+    .result-emoji{font-size:2.5rem;margin-bottom:8px}
+    .result-nama{font-size:1.1rem;font-weight:800;margin-bottom:4px}
+    .result-detail{font-size:.8rem;color:#94a3b8}
+    .result-status{font-size:1.3rem;font-weight:900;margin-top:8px}
+    .result-foto{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.2);margin-bottom:10px}
+
+    /* LOG */
+    .log-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+    .log-item:last-child{border-bottom:none}
+    .log-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#0891b2);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+    .log-name{font-size:.85rem;font-weight:600}
+    .log-detail{font-size:.72rem;color:#64748b}
+    .log-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700}
+    .badge-hadir{background:rgba(74,222,128,.15);color:#4ade80}
+    .badge-terlambat{background:rgba(251,146,60,.15);color:#fb923c}
+    .badge-pulang{background:rgba(96,165,250,.15);color:#60a5fa}
+    .log-time{font-size:.72rem;color:#475569;margin-left:auto;white-space:nowrap}
+
+    /* LOGIN CARDS */
+    .login-section{margin-top:32px}
+    .login-section h2{font-size:.85rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+    .login-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:500px){.login-grid{grid-template-columns:1fr}}
+    .login-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px 14px;text-align:center;text-decoration:none;color:white;transition:.2s}
+    .login-card:hover{transform:translateY(-3px);background:rgba(255,255,255,.08)}
+    .login-card .ic{font-size:1.8rem;margin-bottom:8px;display:block}
+    .login-card h3{font-size:.88rem;font-weight:800;margin-bottom:4px}
+    .login-card p{font-size:.72rem;color:#64748b}
+    .lc-admin .ic{color:#f59e0b}.lc-siswa .ic{color:#4ade80}.lc-wali .ic{color:#60a5fa}
+
+    footer{text-align:center;padding:20px;color:#334155;font-size:.75rem;border-top:1px solid rgba(255,255,255,.04);margin-top:32px}
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="index.php" class="navbar-brand">
+        <?php if (!empty($pengaturan['logo']) && file_exists(__DIR__.'/uploads/logo/'.$pengaturan['logo'])): ?>
+            <img src="<?= BASE_URL ?>uploads/logo/<?= $pengaturan['logo'] ?>" class="navbar-logo" alt="Logo">
+        <?php else: ?>
+            <div class="navbar-logo-icon"><i class="fas fa-school"></i></div>
+        <?php endif; ?>
+        <div>
+            <div class="navbar-title"><?= htmlspecialchars($pengaturan['nama_sekolah']) ?></div>
+            <div class="navbar-sub">Sistem Absensi Digital</div>
+        </div>
+    </a>
+    <div class="navbar-clock" id="navClock"><?= date('H:i:s') ?></div>
+    <a href="portal_kepsek_login.php" class="btn-nav btn-kepsek-nav" title="Portal Kepala Sekolah"><i class="fas fa-user-tie"></i> <span class="btn-kepsek-txt">Kepsek</span></a>
+    <a href="portal_bk_login.php" class="btn-nav btn-bk-nav" title="Portal Guru BK"><i class="fas fa-user-friends"></i> <span class="btn-bk-txt">BK</span></a>
+    <a href="portal_disiplin_login.php" class="btn-nav btn-disiplin-nav" title="Portal Disiplin Sekolah"><i class="fas fa-shield-alt"></i> <span class="btn-disiplin-txt">Disiplin</span></a>
+    <a href="login.php?role=admin" class="btn-nav btn-login-nav"><i class="fas fa-sign-in-alt"></i> Masuk</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-bg-grad"></div>
+    <div class="hero-content">
+        <div class="hero-title">Absensi Digital<br><?= htmlspecialchars($pengaturan['nama_sekolah']) ?></div>
+        <div class="hero-sub">Scan QR / Barcode untuk absensi langsung</div>
+        <div class="hero-date"><i class="fas fa-calendar-alt" style="margin-right:7px;color:#38bdf8"></i><?= $tgl_indo ?></div>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stats-grid">
+        <div class="stat-item"><div class="stat-num c-total" id="s-total"><?= $stats['total_siswa'] ?></div><div class="stat-lbl">Total</div></div>
+        <div class="stat-item"><div class="stat-num c-hadir" id="s-hadir"><?= $stats['Hadir'] ?></div><div class="stat-lbl">Hadir</div></div>
+        <div class="stat-item"><div class="stat-num c-terlambat" id="s-terlambat"><?= $stats['Terlambat'] ?></div><div class="stat-lbl">Terlambat</div></div>
+        <div class="stat-item"><div class="stat-num c-alpa" id="s-alpa"><?= $stats['belum_absen'] ?></div><div class="stat-lbl">Belum</div></div>
+        <div class="stat-item"><div class="stat-num c-sakit" id="s-sakit"><?= $stats['Sakit'] ?></div><div class="stat-lbl">Sakit</div></div>
+        <div class="stat-item"><div class="stat-num c-izin" id="s-izin"><?= $stats['Izin'] ?></div><div class="stat-lbl">Izin</div></div>
+        <div class="stat-item"><div class="stat-num c-bolos" id="s-bolos"><?= $stats['Bolos'] ?></div><div class="stat-lbl">Bolos</div></div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="grid-scan">
+
+    <!-- KOLOM KIRI: SCANNER -->
+    <div>
+        <div class="card">
+            <div class="card-header"><i class="fas fa-qrcode" style="color:#38bdf8"></i> Scan Absensi</div>
+            <div class="card-body">
+
+                <!-- Mode Masuk / Pulang -->
+                <div class="mode-btns">
+                    <button id="btnMasuk" class="mode-btn mode-masuk" onclick="setMode('masuk')">🟢 Absen Masuk</button>
+                    <button id="btnPulang" class="mode-btn mode-pulang inactive" onclick="setMode('pulang')">🔴 Absen Pulang</button>
+                </div>
+                <div class="mode-label masuk" id="modeLabel">Mode aktif: ABSEN MASUK</div>
+
+                <!-- Tabs -->
+                <div class="scan-tabs">
+                    <button class="scan-tab active" onclick="switchTab('camera',this)"><i class="fas fa-camera"></i> Kamera</button>
+                    <button class="scan-tab" onclick="switchTab('usb',this)"><i class="fas fa-usb"></i> USB Scanner</button>
+                </div>
+
+                <!-- Camera Tab -->
+                <div id="tab-camera">
+                    <div id="libStatus" style="text-align:center;padding:6px;font-size:.75rem;color:#64748b;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:8px">
+                        <i class="fas fa-spinner fa-spin"></i> Memuat library...
+                    </div>
+                    <div class="video-box">
+                        <div id="scanPlaceholder">
+                            <i class="fas fa-camera fa-3x" style="margin-bottom:10px"></i>
+                            <p style="font-size:.85rem">Klik <strong style="color:white">Mulai Scan</strong></p>
+                        </div>
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <canvas id="scanCanvas" style="display:none"></canvas>
+                        <div id="scanOverlay">
+                            <div class="scan-frame"><div class="scan-line"></div></div>
+                            <div class="scan-hint">Arahkan QR/Barcode ke kotak hijau</div>
+                        </div>
+                        <div id="detectFlash"></div>
+                    </div>
+                    <div class="scan-controls">
+                        <button class="btn-scan btn-start" id="startBtn" onclick="startScan()"><i class="fas fa-play"></i> Mulai Scan</button>
+                        <button class="btn-scan btn-stop" id="stopBtn" onclick="stopScan()"><i class="fas fa-stop"></i> Stop</button>
+                        <select id="cameraSelect" style="flex:1;padding:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:white;font-size:.8rem"></select>
+                    </div>
+                    <div id="debugInfo" style="margin-top:5px;font-size:.7rem;color:#475569;text-align:center;min-height:14px"></div>
+                </div>
+
+                <!-- USB Tab -->
+                <div id="tab-usb" style="display:none">
+                    <div class="usb-box">
+                        <i class="fas fa-barcode fa-2x" style="color:#38bdf8"></i>
+                        <p style="margin-top:8px;font-size:.82rem;color:#94a3b8">Hubungkan USB Scanner, klik field lalu scan kartu</p>
+                        <input type="text" id="usbInput" placeholder="🎯 Klik di sini, lalu scan...">
+                    </div>
+                </div>
+
+                <!-- Manual NIS -->
+                <div class="manual-box">
+                    <label><i class="fas fa-keyboard"></i> Input NIS Manual</label>
+                    <div class="manual-row">
+                        <input type="text" id="manualNis" placeholder="Ketik NIS lalu Enter">
+                        <button class="btn-cari" onclick="processNIS(document.getElementById('manualNis').value.trim())"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KOLOM KANAN: RESULT + LOG -->
+    <div>
+        <!-- Result -->
+        <div class="result-box" id="resultBox">
+            <div id="resultContent"></div>
+        </div>
+
+        <!-- Log -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list-ul" style="color:#38bdf8"></i> Log Hari Ini
+                <span id="logCount" style="margin-left:auto;background:rgba(59,130,246,.2);color:#60a5fa;padding:2px 10px;border-radius:20px;font-size:.75rem">0</span>
+            </div>
+            <div id="logFeed" style="max-height:420px;overflow-y:auto">
+                <div id="logEmpty" style="padding:30px;text-align:center;color:#334155;font-size:.85rem">
+                    <i class="fas fa-inbox fa-2x" style="opacity:.3;display:block;margin-bottom:8px"></i>Belum ada scan
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /grid-scan -->
+
+<!-- KARTU LOGIN -->
+<div class="login-section">
+    <h2><i class="fas fa-sign-in-alt" style="margin-right:6px;color:#38bdf8"></i>Panel Masuk</h2>
+    <div class="login-grid">
+        <a href="login.php?role=admin" class="login-card lc-admin">
+            <span class="ic"><i class="fas fa-user-shield"></i></span>
+            <h3>Admin</h3>
+            <p>Kelola absensi & data</p>
+        </a>
+        <a href="portal_login.php?role=siswa" class="login-card lc-siswa">
+            <span class="ic"><i class="fas fa-user-graduate"></i></span>
+            <h3>Siswa</h3>
+            <p>Lihat riwayat absensi</p>
+        </a>
+        <a href="portal_login.php?role=wali" class="login-card lc-wali">
+            <span class="ic"><i class="fas fa-chalkboard-teacher"></i></span>
+            <h3>Wali</h3>
+            <p>Pantau kehadiran siswa</p>
+        </a>
+    </div>
+</div>
+</div><!-- /main -->
+
+<footer>&copy; <?= date('Y') ?> <?= htmlspecialchars($pengaturan['nama_sekolah']) ?> — Sistem Absensi Digital</footer>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+
+<script>
+var videoStream=null, scanInterval=null, scanning=false;
+var jenisAbsen='masuk', lastScanned='', lastScannedAt=0;
+var audioCtx=null, zxingDecoder=null;
+const BASE = '<?= BASE_URL ?>';
+
+// Cek library
+var libCheck = setInterval(function(){
+    var jsQRok = typeof jsQR==='function';
+    var zxingOk = typeof ZXing!=='undefined';
+    var el = document.getElementById('libStatus');
+    if (jsQRok && zxingOk) {
+        clearInterval(libCheck);
+        el.innerHTML = '<i class="fas fa-check-circle" style="color:#4ade80"></i> Scanner siap (QR + Barcode)';
+        el.style.color='#4ade80';
+        try {
+            var hints=new Map();
+            hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.QR_CODE]);
+            hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
+            zxingDecoder=new ZXing.BrowserMultiFormatReader(hints);
+        } catch(e){}
+    }
+}, 400);
+
+// Clock
+setInterval(()=>{
+    const n=new Date();
+    document.getElementById('navClock').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+},1000);
+
+// Mode masuk/pulang
+function setMode(m) {
+    jenisAbsen = m;
+    const bM=document.getElementById('btnMasuk'), bP=document.getElementById('btnPulang'), lbl=document.getElementById('modeLabel');
+    if (m==='masuk') {
+        bM.className='mode-btn mode-masuk'; bP.className='mode-btn mode-pulang inactive';
+        lbl.className='mode-label masuk'; lbl.textContent='Mode aktif: ABSEN MASUK';
+    } else {
+        bP.className='mode-btn mode-pulang'; bM.className='mode-btn mode-masuk inactive';
+        lbl.className='mode-label pulang'; lbl.textContent='Mode aktif: ABSEN PULANG';
+    }
+}
+
+// Tab switch
+function switchTab(tab, btn) {
+    document.querySelectorAll('.scan-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-camera').style.display = tab==='camera'?'':'none';
+    document.getElementById('tab-usb').style.display    = tab==='usb'?'':'none';
+    if (tab==='usb') { stopScan(); setTimeout(()=>document.getElementById('usbInput').focus(),150); }
+}
+
+// Load kamera
+async function loadCameras() {
+    var sel=document.getElementById('cameraSelect');
+    if (!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) {
+        sel.innerHTML='<option>Butuh HTTPS</option>'; return;
+    }
+    try {
+        var tmp=await navigator.mediaDevices.getUserMedia({video:true});
+        tmp.getTracks().forEach(t=>t.stop());
+        var devs=await navigator.mediaDevices.enumerateDevices();
+        var cams=devs.filter(d=>d.kind==='videoinput');
+        sel.innerHTML=cams.map((c,i)=>`<option value="${c.deviceId}">${c.label||'Kamera '+(i+1)}</option>`).join('');
+        var back=cams.find(c=>/back|rear|belakang|environment/i.test(c.label));
+        if(back) sel.value=back.deviceId;
+    } catch(e){ sel.innerHTML='<option>Izin ditolak</option>'; }
+}
+loadCameras();
+
+// Start scan
+async function startScan() {
+    if (!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) {
+        showResult({success:false,message:'Kamera perlu HTTPS!'}); return;
+    }
+    var did=document.getElementById('cameraSelect').value;
+    var c={video:did?{deviceId:{exact:did},width:{ideal:1280},height:{ideal:720}}:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}};
+    try {
+        videoStream=await navigator.mediaDevices.getUserMedia(c);
+        var v=document.getElementById('cameraVideo');
+        v.srcObject=videoStream; await v.play();
+        document.getElementById('scanPlaceholder').style.display='none';
+        v.style.display='block';
+        document.getElementById('scanOverlay').style.display='block';
+        document.getElementById('startBtn').style.display='none';
+        document.getElementById('stopBtn').style.display='';
+        scanning=true; dbg('📷 Kamera aktif...');
+        startLoop(v);
+    } catch(e) {
+        var msg='Error: '+e.message;
+        if(e.name==='NotAllowedError') msg='Izin kamera ditolak.';
+        showResult({success:false,message:msg});
+    }
+}
+
+function startLoop(video) {
+    var canvas=document.getElementById('scanCanvas');
+    var ctx=canvas.getContext('2d',{willReadFrequently:true});
+    var frame=0;
+    scanInterval=setInterval(function(){
+        if(!scanning||video.readyState<2||video.videoWidth===0) return;
+        if(canvas.width!==video.videoWidth){canvas.width=video.videoWidth;canvas.height=video.videoHeight;}
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        frame++;
+        var cw=Math.floor(canvas.width*.7),ch=Math.floor(canvas.height*.7);
+        var cx=Math.floor((canvas.width-cw)/2),cy=Math.floor((canvas.height-ch)/2);
+        var imgData;
+        try{imgData=ctx.getImageData(cx,cy,cw,ch);}catch(e){return;}
+        if(typeof jsQR==='function'){
+            var qr=jsQR(imgData.data,imgData.width,imgData.height,{inversionAttempts:'dontInvert'});
+            if(qr&&qr.data){onDetected(qr.data);return;}
+            if(frame%2===0){try{var fd=ctx.getImageData(0,0,canvas.width,canvas.height);var q2=jsQR(fd.data,fd.width,fd.height,{inversionAttempts:'attemptBoth'});if(q2&&q2.data){onDetected(q2.data);return;}}catch(e){}}
+        }
+        if(zxingDecoder&&frame%3===0){try{var lum=new ZXing.HTMLCanvasElementLuminanceSource(canvas);var bmp=new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));var res=zxingDecoder.decode(bmp);if(res&&res.getText()){onDetected(res.getText());return;}}catch(e){}}
+        if(frame%90===0) dbg('Frame: '+frame+' — Arahkan ke kotak hijau');
+    },80);
+}
+
+function onDetected(code) {
+    code=code.trim(); if(!code) return;
+    var now=Date.now();
+    if(code===lastScanned&&now-lastScannedAt<2500) return;
+    lastScanned=code; lastScannedAt=now;
+    var f=document.getElementById('detectFlash');
+    f.style.display='block'; setTimeout(()=>f.style.display='none',300);
+    beep(880,150);
+    processNIS(code);
+}
+
+function stopScan() {
+    scanning=false;
+    if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+    if(videoStream){videoStream.getTracks().forEach(t=>t.stop());videoStream=null;}
+    var v=document.getElementById('cameraVideo');
+    v.srcObject=null; v.style.display='none';
+    document.getElementById('scanPlaceholder').style.display='flex';
+    document.getElementById('scanOverlay').style.display='none';
+    document.getElementById('startBtn').style.display='';
+    document.getElementById('stopBtn').style.display='none';
+    dbg('');
+}
+
+// USB
+document.getElementById('usbInput').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){var v=this.value.trim();if(v){processNIS(v);this.value='';}}
+});
+// Manual
+document.getElementById('manualNis').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){processNIS(this.value.trim());this.value='';}
+});
+
+// Proses NIS → kirim ke ajax publik
+async function processNIS(nis) {
+    if(!nis||nis.length<3) return;
+    dbg('⏳ Memproses: '+nis);
+    try {
+        var resp=await fetch(BASE+'ajax/absen_publik.php',{
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:'nis='+encodeURIComponent(nis)+'&jenis='+encodeURIComponent(jenisAbsen)
+        });
+        var data=await resp.json();
+        showResult(data);
+        if(data.success){
+            addToLog(data);
+            beep(880,150);
+            refreshStats();
+            if(navigator.vibrate) navigator.vibrate([80,40,80]);
+        } else {
+            beep(300,400);
+            if(navigator.vibrate) navigator.vibrate(400);
+        }
+    } catch(e){ showResult({success:false,message:'Error koneksi'}); }
+}
+
+function showResult(data) {
+    const box=document.getElementById('resultBox');
+    box.style.display='block';
+    const colors={Hadir:'#4ade80',Terlambat:'#fb923c',Pulang:'#60a5fa'};
+    const emoji={Hadir:'✅',Terlambat:'⏰',Pulang:'🏠'};
+    if(!data.success) {
+        box.className='result-box error';
+        box.innerHTML=`<div class="result-emoji">❌</div><div class="result-nama" style="color:#f87171">${data.message}</div>`;
+        return;
+    }
+    const cls='result-box success-'+data.status.toLowerCase();
+    const fotoHtml = data.foto ? `<img src="${BASE}uploads/foto/${data.foto}" class="result-foto">` : '';
+    box.className=cls;
+    box.innerHTML=`
+        ${fotoHtml}
+        <div class="result-emoji">${emoji[data.status]||'✅'}</div>
+        <div class="result-nama">${data.nama}</div>
+        <div class="result-detail">${data.nis} | Kelas ${data.kelas}</div>
+        <div class="result-status" style="color:${colors[data.status]||'#4ade80'}">${data.status}</div>
+        <div style="font-size:.8rem;color:#64748b;margin-top:4px">${data.jam}</div>`;
+    // Auto hide setelah 5 detik
+    setTimeout(()=>{ box.style.display='none'; }, 5000);
+}
+
+function addToLog(data) {
+    const feed=document.getElementById('logFeed');
+    document.getElementById('logEmpty')?.remove();
+    const item=document.createElement('div'); item.className='log-item';
+    const badgeCls={Hadir:'badge-hadir',Terlambat:'badge-terlambat',Pulang:'badge-pulang'}[data.status]||'badge-hadir';
+    item.innerHTML=`<div class="log-avatar">${data.nama.charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0"><div class="log-name">${data.nama}</div><div class="log-detail">${data.nis} | ${data.kelas}</div></div>
+        <div><span class="log-badge ${badgeCls}">${data.status}</span><div class="log-time">${data.jam}</div></div>`;
+    feed.insertBefore(item, feed.firstChild);
+    const cnt=document.getElementById('logCount');
+    cnt.textContent=parseInt(cnt.textContent||0)+1;
+}
+
+// Refresh stats
+async function refreshStats() {
+    try {
+        var r=await fetch(BASE+'ajax/get_stats.php');
+        var d=await r.json();
+        if(d){
+            document.getElementById('s-hadir').textContent=d.Hadir||0;
+            document.getElementById('s-terlambat').textContent=d.Terlambat||0;
+            document.getElementById('s-alpa').textContent=d.belum_absen||0;
+            document.getElementById('s-sakit').textContent=d.Sakit||0;
+            document.getElementById('s-izin').textContent=d.Izin||0;
+            document.getElementById('s-bolos').textContent=d.Bolos||0;
+        }
+    } catch(e){}
+}
+
+// Load log hari ini
+async function loadLog() {
+    try {
+        var r=await fetch(BASE+'ajax/get_log.php'); var d=await r.json();
+        if(d&&d.length>0){
+            document.getElementById('logEmpty')?.remove();
+            d.forEach(function(row){
+                var feed=document.getElementById('logFeed');
+                var item=document.createElement('div'); item.className='log-item';
+                var st=row.status||'Hadir';
+                var bc={Hadir:'badge-hadir',Terlambat:'badge-terlambat',Pulang:'badge-pulang'}[st]||'badge-hadir';
+                item.innerHTML=`<div class="log-avatar">${row.nama.charAt(0).toUpperCase()}</div>
+                    <div style="flex:1;min-width:0"><div class="log-name">${row.nama}</div><div class="log-detail">${row.nis} | ${row.kelas}</div></div>
+                    <div><span class="log-badge ${bc}">${st}</span><div class="log-time">${row.jam_masuk?row.jam_masuk.slice(0,5):'-'}</div></div>`;
+                feed.appendChild(item);
+            });
+            document.getElementById('logCount').textContent=d.length;
+        }
+    } catch(e){}
+}
+loadLog();
+
+function dbg(msg){var e=document.getElementById('debugInfo');if(e)e.textContent=msg;}
+
+function beep(freq,dur){
+    try{
+        if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        if(audioCtx.state==='suspended') audioCtx.resume();
+        var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.connect(g);g.connect(audioCtx.destination);
+        o.type='square';o.frequency.value=freq||880;
+        g.gain.setValueAtTime(.4,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur/1000);
+        o.start();o.stop(audioCtx.currentTime+dur/1000);
+    }catch(e){}
+}
+
+document.addEventListener('click',function(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();});
+window.addEventListener('beforeunload',stopScan);
+</script>
+</body>
+</html>

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Portal Wali Kelas – MA NW TOYA</title>
+<style>
+:root {
+  --primary: #1565C0;
+  --primary-dark: #0D47A1;
+  --primary-light: #1976D2;
+  --accent: #00ACC1;
+  --accent2: #00838F;
+  --bg: #F0F4F8;
+  --card: #FFFFFF;
+  --text: #1A2340;
+  --muted: #607D8B;
+  --hadir: #2E7D32;
+  --hadir-bg: #E8F5E9;
+  --terlambat: #E65100;
+  --terlambat-bg: #FFF3E0;
+  --sakit: #1565C0;
+  --sakit-bg: #E3F2FD;
+  --izin: #6A1B9A;
+  --izin-bg: #F3E5F5;
+  --alpa: #C62828;
+  --alpa-bg: #FFEBEE;
+  --belum: #546E7A;
+  --belum-bg: #ECEFF1;
+  --nav-h: 64px;
+  --header-h: 70px;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(21,101,192,.1);
+}
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
+/* ===== HEADER ===== */
+.top-header {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--accent2) 100%);
+  color: #fff;
+  padding: 14px 18px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(13,71,161,.3);
+}
+.header-row1 { display:flex; align-items:center; justify-content:space-between; }
+.school-info h2 { font-size: 16px; font-weight: 700; letter-spacing:.3px; }
+.school-info p { font-size: 12px; opacity:.85; margin-top:1px; }
+.clock-badge {
+  background: rgba(255,255,255,.18);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing:.5px;
+}
+.date-row { font-size:11.5px; opacity:.8; margin-top:6px; display:flex; align-items:center; gap:5px; }
+.date-row svg { width:13px; height:13px; }
+
+/* ===== NAV TABS ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: var(--nav-h);
+  background: #fff;
+  border-top: 1px solid #E0E8F0;
+  display: flex;
+  align-items: stretch;
+  z-index: 200;
+  box-shadow: 0 -4px 20px rgba(21,101,192,.12);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: all .2s;
+  position: relative;
+}
+.nav-btn .nav-icon { font-size:20px; transition: transform .2s; }
+.nav-btn .nav-label { font-size: 10.5px; font-weight: 500; color: var(--muted); transition: color .2s; }
+.nav-btn.active .nav-label { color: var(--primary); font-weight: 700; }
+.nav-btn.active .nav-icon { transform: scale(1.15); }
+.nav-btn.active::after {
+  content:'';
+  position:absolute;
+  top:0; left:20%; right:20%;
+  height:3px;
+  background: var(--primary);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  padding: 14px 14px calc(var(--nav-h) + 14px);
+  min-height: calc(100vh - var(--header-h));
+}
+.tab-page { display:none; }
+.tab-page.active { display:block; }
+
+/* ===== STAT CARDS ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+.stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.stat-icon.hadir { background: var(--hadir-bg); }
+.stat-icon.tidak { background: var(--alpa-bg); }
+.stat-icon.belum { background: var(--belum-bg); }
+.stat-icon.total { background: #E3F2FD; }
+.stat-num { font-size: 24px; font-weight: 800; line-height:1; }
+.stat-num.hadir { color: var(--hadir); }
+.stat-num.tidak { color: var(--alpa); }
+.stat-num.belum { color: var(--belum); }
+.stat-num.total { color: var(--primary); }
+.stat-lbl { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-top:2px; }
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin: 16px 0 10px;
+}
+
+/* ===== STUDENT LIST (Beranda) ===== */
+.student-list { display:flex; flex-direction:column; gap:8px; }
+.student-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  transition: transform .15s;
+}
+.student-card:active { transform: scale(.98); }
+.avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.student-info { flex:1; min-width:0; }
+.student-name { font-size: 13.5px; font-weight: 600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.student-nis { font-size: 11px; color: var(--muted); margin-top:2px; }
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-hadir { background: var(--hadir-bg); color: var(--hadir); }
+.badge-belum { background: var(--belum-bg); color: var(--belum); }
+.badge-terlambat { background: var(--terlambat-bg); color: var(--terlambat); }
+.badge-sakit { background: var(--sakit-bg); color: var(--sakit); }
+.badge-izin { background: var(--izin-bg); color: var(--izin); }
+.badge-alpa { background: var(--alpa-bg); color: var(--alpa); }
+
+/* ===== ABSEN MANUAL ===== */
+.absen-header {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.absen-header p { font-size:12.5px; color:var(--muted); margin-top:4px; }
+.absen-header h3 { font-size:15px; font-weight:700; color:var(--primary); }
+
+.manual-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+.manual-top {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #F0F4F8;
+}
+.manual-btns {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+}
+.absen-btn {
+  border: none;
+  padding: 9px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.absen-btn .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-bottom: 1px;
+}
+.absen-btn:active { opacity:.7; transform:scale(.95); }
+.absen-btn.btn-hadir { background: var(--hadir-bg); color: var(--hadir); }
+.absen-btn.btn-hadir.selected { background: var(--hadir); color:#fff; }
+.absen-btn.btn-terlambat { background: var(--terlambat-bg); color: var(--terlambat); }
+.absen-btn.btn-terlambat.selected { background: var(--terlambat); color:#fff; }
+.absen-btn.btn-sakit { background: var(--sakit-bg); color: var(--sakit); }
+.absen-btn.btn-sakit.selected { background: var(--sakit); color:#fff; }
+.absen-btn.btn-izin { background: var(--izin-bg); color: var(--izin); }
+.absen-btn.btn-izin.selected { background: var(--izin); color:#fff; }
+.absen-btn.btn-alpa { background: var(--alpa-bg); color: var(--alpa); }
+.absen-btn.btn-alpa.selected { background: var(--alpa); color:#fff; }
+
+/* ===== EDIT ABSEN ===== */
+.edit-filter {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.edit-filter label { font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap; }
+.edit-filter input[type=date] {
+  flex:1;
+  border: 1.5px solid #D0DCF0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+}
+.edit-filter input[type=date]:focus { border-color: var(--primary); }
+
+.edit-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.edit-top {
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #F0F4F8;
+}
+.edit-info { flex:1; min-width:0; }
+.edit-name { font-size:13.5px; font-weight:600; }
+.edit-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.edit-actions {
+  display: flex;
+  gap: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 8px 10px;
+  gap: 6px;
+}
+.edit-actions::-webkit-scrollbar { display:none; }
+.edit-select-btn {
+  flex-shrink: 0;
+  border: 1.5px solid currentColor;
+  background: transparent;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.edit-select-btn.hadir { color: var(--hadir); }
+.edit-select-btn.hadir.active { background:var(--hadir); color:#fff; }
+.edit-select-btn.terlambat { color: var(--terlambat); }
+.edit-select-btn.terlambat.active { background:var(--terlambat); color:#fff; }
+.edit-select-btn.sakit { color: var(--sakit); }
+.edit-select-btn.sakit.active { background:var(--sakit); color:#fff; }
+.edit-select-btn.izin { color: var(--izin); }
+.edit-select-btn.izin.active { background:var(--izin); color:#fff; }
+.edit-select-btn.alpa { color: var(--alpa); }
+.edit-select-btn.alpa.active { background:var(--alpa); color:#fff; }
+.edit-select-btn:active { transform:scale(.95); }
+
+/* ===== TOAST ===== */
+.toast-wrap {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 90%;
+  max-width: 390px;
+  pointer-events: none;
+}
+.toast {
+  background: #1A2340;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  animation: toastIn .3s ease;
+  pointer-events: auto;
+}
+.toast.success { background: #1B5E20; }
+.toast.error { background: #B71C1C; }
+@keyframes toastIn {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* ===== SAVE ALL BUTTON ===== */
+.save-all-bar {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 390px;
+  z-index: 150;
+}
+.save-all-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent2) 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(21,101,192,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .2s;
+}
+.save-all-btn:active { transform:scale(.98); opacity:.9; }
+
+/* ===== Progress bar ===== */
+.progress-bar-wrap {
+  background: rgba(255,255,255,.25);
+  border-radius: 4px;
+  height: 5px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 4px;
+  transition: width .5s ease;
+}
+
+.avatar-colors { /* via JS */ }
+
+/* empty state */
+.empty-state {
+  text-align:center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+.empty-state .icon { font-size: 40px; margin-bottom:10px; }
+.empty-state p { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="top-header">
+  <div class="header-row1">
+    <div class="school-info">
+      <h2>📚 MA NW TOYA</h2>
+      <p>Wali Kelas X-1 &nbsp;|&nbsp; 13 Siswa</p>
+    </div>
+    <div class="clock-badge" id="clock">--:--:--</div>
+  </div>
+  <div class="date-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span id="tanggal">--</span>
+  </div>
+  <!-- Progress absensi -->
+  <div class="progress-bar-wrap" id="progressBar">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- ===== BERANDA ===== -->
+  <div class="tab-page active" id="page-beranda">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon hadir">✅</div>
+        <div>
+          <div class="stat-num hadir" id="count-hadir">0</div>
+          <div class="stat-lbl">Hadir</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon tidak">❌</div>
+        <div>
+          <div class="stat-num tidak" id="count-tidak">0</div>
+          <div class="stat-lbl">Tidak Hadir</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon belum">🕐</div>
+        <div>
+          <div class="stat-num belum" id="count-belum">0</div>
+          <div class="stat-lbl">Belum Absen</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon total">👥</div>
+        <div>
+          <div class="stat-num total">13</div>
+          <div class="stat-lbl">Total Siswa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Status Absensi Siswa</div>
+    <div class="student-list" id="beranda-list"></div>
+  </div>
+
+  <!-- ===== ABSEN MANUAL ===== -->
+  <div class="tab-page" id="page-manual">
+    <div class="absen-header">
+      <h3>✏️ Absen Manual Cepat</h3>
+      <p>Ketuk status kehadiran setiap siswa, lalu simpan sekaligus</p>
+    </div>
+    <div id="manual-list"></div>
+    <div style="height:70px"></div>
+  </div>
+
+  <!-- ===== EDIT ABSEN ===== -->
+  <div class="tab-page" id="page-edit">
+    <div class="edit-filter">
+      <label>📅 Tanggal</label>
+      <input type="date" id="editTanggal">
+    </div>
+    <div id="edit-list"></div>
+    <div style="height:70px"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-beranda" onclick="switchTab('beranda')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Beranda</span>
+  </button>
+  <button class="nav-btn" id="nav-manual" onclick="switchTab('manual')">
+    <span class="nav-icon">✏️</span>
+    <span class="nav-label">Absen Manual</span>
+  </button>
+  <button class="nav-btn" id="nav-edit" onclick="switchTab('edit')">
+    <span class="nav-icon">📝</span>
+    <span class="nav-label">Edit Absen</span>
+  </button>
+</nav>
+
+<!-- SAVE BAR (shown on Manual & Edit tabs) -->
+<div class="save-all-bar" id="saveBar" style="display:none">
+  <button class="save-all-btn" onclick="saveAll()">
+    💾 Simpan Semua Absensi
+  </button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ===== DATA SISWA =====
+const SISWA = [
+  { id:1, nis:'202607', nama:'Ahmad Yani',         waktu:'06:21:43', status:'Hadir' },
+  { id:2, nis:'202608', nama:'Ahmad Yazid Nabil',  waktu:'',         status:'Belum' },
+  { id:3, nis:'202609', nama:'Arga Jaozan Jiwari', waktu:'',         status:'Belum' },
+  { id:4, nis:'202610', nama:'Dwi Fitriyani Hukmi',waktu:'06:24:19', status:'Hadir' },
+  { id:5, nis:'202611', nama:'Muh. Hipzul Mubarrok',waktu:'06:21:45',status:'Hadir' },
+  { id:6, nis:'202612', nama:'Muhammad Candra Banyu',waktu:'06:15:49',status:'Hadir' },
+  { id:7, nis:'202613', nama:'Muhammad Erza Saupian',waktu:'06:18:30',status:'Hadir' },
+  { id:8, nis:'202614', nama:'Muhammad Fauzan',    waktu:'',         status:'Belum' },
+  { id:9, nis:'202615', nama:'Nadia Rahma Aulia',  waktu:'06:22:10', status:'Hadir' },
+  { id:10,nis:'202616', nama:'Putri Salsabila',    waktu:'06:45:00', status:'Terlambat' },
+  { id:11,nis:'202617', nama:'Rahmat Hidayat',     waktu:'',         status:'Belum' },
+  { id:12,nis:'202618', nama:'Siti Nurhaliza',     waktu:'06:20:05', status:'Hadir' },
+  { id:13,nis:'202619', nama:'Yusuf Al Farisi',    waktu:'06:25:15', status:'Hadir' },
+];
+
+// State untuk tab manual & edit
+let manualState = {};
+let editState   = {};
+SISWA.forEach(s => {
+  manualState[s.id] = s.status === 'Belum' ? null : s.status;
+  editState[s.id]   = s.status === 'Belum' ? null : s.status;
+});
+
+// Avatar colors
+const COLORS = ['#1565C0','#00838F','#2E7D32','#6A1B9A','#C62828','#E65100','#004D40','#283593','#37474F','#4A148C'];
+function avatarColor(i) { return COLORS[i % COLORS.length]; }
+function initials(nama) {
+  const parts = nama.trim().split(' ');
+  return parts.length >= 2 ? (parts[0][0]+parts[1][0]).toUpperCase() : nama.slice(0,2).toUpperCase();
+}
+function statusBadge(s) {
+  const map = { Hadir:'hadir', Terlambat:'terlambat', Sakit:'sakit', Izin:'izin', Alpa:'alpa', Belum:'belum' };
+  const cls = map[s] || 'belum';
+  return `<span class="status-badge badge-${cls}">${s||'Belum'}</span>`;
+}
+
+// ===== CLOCK =====
+function updateClock() {
+  const n = new Date();
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const bln  = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+  const pad  = x => String(x).padStart(2,'0');
+  document.getElementById('clock').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  document.getElementById('tanggal').textContent = `${hari[n.getDay()]}, ${n.getDate()} ${bln[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Set default tanggal edit
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm   = String(today.getMonth()+1).padStart(2,'0');
+const dd   = String(today.getDate()).padStart(2,'0');
+document.getElementById('editTanggal').value = `${yyyy}-${mm}-${dd}`;
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+  document.getElementById('saveBar').style.display = (tab === 'beranda') ? 'none' : 'block';
+  if (tab === 'beranda') renderBeranda();
+  if (tab === 'manual')  renderManual();
+  if (tab === 'edit')    renderEdit();
+}
+
+// ===== BERANDA =====
+function updateStats() {
+  const h = SISWA.filter(s => s.status === 'Hadir').length;
+  const t = SISWA.filter(s => ['Terlambat','Sakit','Izin','Alpa'].includes(s.status)).length;
+  const b = SISWA.filter(s => s.status === 'Belum').length;
+  document.getElementById('count-hadir').textContent = h;
+  document.getElementById('count-tidak').textContent = t;
+  document.getElementById('count-belum').textContent = b;
+  const done = 13 - b;
+  document.getElementById('progressFill').style.width = Math.round(done/13*100)+'%';
+}
+
+function renderBeranda() {
+  updateStats();
+  const list = document.getElementById('beranda-list');
+  list.innerHTML = SISWA.map((s,i) => `
+    <div class="student-card">
+      <div class="avatar" style="background:${avatarColor(i)}">${initials(s.nama)}</div>
+      <div class="student-info">
+        <div class="student-name">${s.nama}</div>
+        <div class="student-nis">${s.nis}${s.waktu ? ' · '+s.waktu : ''}</div>
+      </div>
+      ${statusBadge(s.status)}
+    </div>
+  `).join('');
+}
+
+// ===== MANUAL =====
+const STATUS_LIST = ['Hadir','Terlambat','Sakit','Izin','Alpa'];
+const BTN_CLS = { Hadir:'btn-hadir', Terlambat:'btn-terlambat', Sakit:'btn-sakit', Izin:'btn-izin', Alpa:'btn-alpa' };
+const ICONS = { Hadir:'✅', Terlambat:'⏰', Sakit:'🤒', Izin:'📋', Alpa:'❌' };
+
+function renderManual() {
+  const list = document.getElementById('manual-list');
+  list.innerHTML = SISWA.map((s,i) => `
+    <div class="manual-card">
+      <div class="manual-top">
+        <div class="avatar" style="background:${avatarColor(i)};width:36px;height:36px;font-size:12px">${initials(s.nama)}</div>
+        <div class="student-info">
+          <div class="student-name">${s.nama}</div>
+          <div class="student-nis">${s.nis}</div>
+        </div>
+        ${manualState[s.id] ? `<span class="status-badge badge-${manualState[s.id].toLowerCase()}">${manualState[s.id]}</span>` : '<span class="status-badge badge-belum">Belum</span>'}
+      </div>
+      <div class="manual-btns">
+        ${STATUS_LIST.map(st => `
+          <button class="absen-btn ${BTN_CLS[st]} ${manualState[s.id]===st?'selected':''}"
+            onclick="setManual(${s.id},${i},'${st}')">
+            <span>${ICONS[st]}</span>
+            <span>${st}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function setManual(sid, idx, status) {
+  manualState[sid] = status;
+  renderManual();
+}
+
+// ===== EDIT =====
+function renderEdit() {
+  const list = document.getElementById('edit-list');
+  list.innerHTML = SISWA.map((s,i) => `
+    <div class="edit-card">
+      <div class="edit-top">
+        <div class="avatar" style="background:${avatarColor(i)};width:36px;height:36px;font-size:12px">${initials(s.nama)}</div>
+        <div class="edit-info">
+          <div class="edit-name">${s.nama}</div>
+          <div class="edit-meta">${s.nis} ${editState[s.id] ? '· Saat ini: <b>'+editState[s.id]+'</b>' : '· Belum tercatat'}</div>
+        </div>
+      </div>
+      <div class="edit-actions">
+        ${STATUS_LIST.map(st => `
+          <button class="edit-select-btn ${st.toLowerCase()} ${editState[s.id]===st?'active':''}"
+            onclick="setEdit(${s.id},'${st}')">
+            ${ICONS[st]} ${st}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function setEdit(sid, status) {
+  editState[sid] = status;
+  renderEdit();
+}
+
+// ===== SAVE ALL =====
+function saveAll() {
+  const activeTab = document.querySelector('.tab-page.active').id;
+  if (activeTab === 'page-manual') {
+    let saved = 0;
+    SISWA.forEach(s => {
+      if (manualState[s.id]) {
+        s.status = manualState[s.id];
+        if (manualState[s.id] === 'Hadir' && !s.waktu) {
+          const n = new Date();
+          s.waktu = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+        }
+        saved++;
+      }
+    });
+    showToast('✅ Absensi disimpan untuk '+saved+' siswa', 'success');
+    updateStats();
+  } else if (activeTab === 'page-edit') {
+    let saved = 0;
+    SISWA.forEach(s => {
+      if (editState[s.id]) {
+        s.status = editState[s.id];
+        saved++;
+      }
+    });
+    const tgl = document.getElementById('editTanggal').value;
+    showToast('📝 Edit absensi tersimpan ('+tgl+') – '+saved+' siswa', 'success');
+    updateStats();
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg, type='info') {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .3s';
+    setTimeout(() => el.remove(), 300);
+  }, 3000);
+}
+
+// ===== INIT =====
+renderBeranda();
+</script>
+</body>
+</html>
