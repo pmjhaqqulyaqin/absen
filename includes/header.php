@@ -82,6 +82,11 @@ $daftar_periode_hdr = get_daftar_periode($conn);
         <a href="<?= BASE_URL ?>hapus_log.php" class="nav-item <?= $current_page=='hapus_log'?'active':'' ?>">
             <i class="fas fa-trash"></i> Hapus Log
         </a>
+        <a href="<?= BASE_URL ?>sinkronisasi.php" class="nav-item <?= $current_page=='sinkronisasi'?'active':'' ?>"
+           style="<?= $current_page=='sinkronisasi'?'':'background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(5,150,105,.08));border-left:3px solid #10b981;' ?>">
+            <i class="fas fa-sync-alt" style="color:#10b981"></i>
+            <span style="color:#6ee7b7;font-weight:600;">Sinkronisasi Data</span>
+        </a>
 
         <div class="nav-section">PENGATURAN</div>
         <a href="<?= BASE_URL ?>pengaturan.php" class="nav-item <?= $current_page=='pengaturan'?'active':'' ?>">

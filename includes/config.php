@@ -4,10 +4,10 @@
 // XAMPP: DB_USER='root', DB_PASS='', BASE_URL='/absensi/'
 // Hosting: sesuaikan DB_USER, DB_PASS, DB_NAME, BASE_URL
 // =============================================
-define('DB_HOST', 'localhost');
-define('DB_USER', 'login276_absensi');
-define('DB_PASS', 'Absen2026!');
-define('DB_NAME', 'login276_absensi');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'login276_absensi');
+define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'Absen2026!');
+define('DB_NAME', getenv('DB_NAME') ?: 'login276_absensi');
 define('BASE_URL', '/');
 
 date_default_timezone_set('Asia/Jakarta');
