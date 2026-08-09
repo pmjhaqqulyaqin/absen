@@ -35,7 +35,7 @@ $total_siswa = count($rows_data);
 
 // Jumlah hari kerja (Senin-Jumat) bulan ini
 $hari_kerja = 0;
-$jml_hari   = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+$jml_hari   = date('t', mktime(0, 0, 0, $bulan, 1, $tahun));
 for ($d = 1; $d <= $jml_hari; $d++) {
     $dn = date('N', mktime(0,0,0,$bulan,$d,$tahun));
     if ($dn < 6) $hari_kerja++;

@@ -14,7 +14,7 @@ $nama_sekolah = strtoupper($pengaturan['nama_sekolah'] ?? 'NAMA SEKOLAH');
 $alamat       = $pengaturan['alamat'] ?? '';
 $kepala       = $pengaturan['kepala_sekolah'] ?? '';
 $nip          = $pengaturan['nip_kepala'] ?? '';
-$jml_hari     = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+$jml_hari     = date('t', mktime(0, 0, 0, $bulan, 1, $tahun));
 
 // Ambil data siswa
 $where_kelas = $kelas ? "AND kelas='$kelas'" : '';

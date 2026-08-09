@@ -54,7 +54,7 @@ $total_izin_all  = array_sum(array_column($rekap_harian,'izin'));
 $total_bolos_all = array_sum(array_column($rekap_harian,'bolos'));
 $total_belum_all = array_sum(array_column($rekap_harian,'belum'));
 
-$jumlah_hari_b = cal_days_in_month(CAL_GREGORIAN, $f_bulan, $f_tahun);
+$jumlah_hari_b = date('t', mktime(0, 0, 0, $f_bulan, 1, $f_tahun));
 
 // === REKAP BULANAN PER KELAS (seluruh kelas, tanpa nama siswa) ===
 $rekap_bulanan_kelas = [];

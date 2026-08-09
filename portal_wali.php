@@ -275,7 +275,7 @@ if ($anak_ids) {
 $total_siswa = count($anak_list);
 
 // ── REKAP KALENDER ───────────────────────────────────────────────────
-$jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+$jumlah_hari = date('t', mktime(0, 0, 0, $bulan, 1, $tahun));
 $absensi_map = [];
 if ($page === 'rekap' && $anak_ids) {
     $filter_sid = $siswa_ok ? "AND siswa_id=$sid_url" : "AND siswa_id IN ($anak_ids_str)";
@@ -2158,7 +2158,7 @@ if ($page === 'laporan_rekap'):
     $lr_tgl = (int)($_GET['lr_tgl'] ?? date('j'));
     $lr_bln = (int)($_GET['lr_bln'] ?? date('n'));
     $lr_thn = (int)($_GET['lr_thn'] ?? date('Y'));
-    $lr_max = cal_days_in_month(CAL_GREGORIAN, $lr_bln, $lr_thn);
+    $lr_max = date('t', mktime(0, 0, 0, $lr_bln, 1, $lr_thn));
     if ($lr_tgl < 1 || $lr_tgl > $lr_max) $lr_tgl = 1;
     $lr_date      = sprintf('%04d-%02d-%02d', $lr_thn, $lr_bln, $lr_tgl);
     $lr_hari_nama = $lr_nh[date('w', strtotime($lr_date))];

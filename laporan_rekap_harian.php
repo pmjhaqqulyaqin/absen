@@ -15,7 +15,7 @@ $bln  = (int)($_GET['bulan'] ?? $bln_default);
 $thn  = (int)($_GET['tahun'] ?? $thn_default);
 
 // Validasi
-$max_hari = cal_days_in_month(CAL_GREGORIAN, $bln, $thn);
+$max_hari = date('t', mktime(0, 0, 0, $bln, 1, $thn));
 if ($tgl < 1 || $tgl > $max_hari) $tgl = 1;
 
 $tanggal_full = sprintf('%04d-%02d-%02d', $thn, $bln, $tgl);
