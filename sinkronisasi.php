@@ -15,6 +15,10 @@ $conn->query("CREATE TABLE IF NOT EXISTS sync_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+// Pastikan kolom ext_id ada di tabel kelas dan siswa (jika database hasil import lama)
+$conn->query("ALTER TABLE kelas ADD COLUMN IF NOT EXISTS ext_id VARCHAR(36) DEFAULT NULL");
+$conn->query("ALTER TABLE siswa ADD COLUMN IF NOT EXISTS ext_id VARCHAR(36) DEFAULT NULL");
+
 // Ambil log terakhir
 $logs = $conn->query("SELECT * FROM sync_log ORDER BY created_at DESC LIMIT 20")->fetch_all(MYSQLI_ASSOC);
 

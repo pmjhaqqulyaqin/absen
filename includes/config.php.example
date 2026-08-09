@@ -1,0 +1,30 @@
+<?php
+// =============================================
+// KONFIGURASI - Edit sesuai kebutuhan Anda
+// XAMPP: DB_USER='root', DB_PASS='', BASE_URL='/absensi/'
+// Hosting: sesuaikan DB_USER, DB_PASS, DB_NAME, BASE_URL
+// =============================================
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'GANTI_USER_DATABASE');
+define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'GANTI_PASSWORD_DATABASE');
+define('DB_NAME', getenv('DB_NAME') ?: 'GANTI_NAMA_DATABASE');
+define('BASE_URL', '/');
+
+// =============================================
+// JANGAN EDIT DI BAWAH INI
+// =============================================
+date_default_timezone_set('Asia/Jakarta');
+
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if ($conn->connect_error) {
+    die('<div style="background:#ff4444;color:white;padding:30px;font-family:Arial;text-align:center">
+        <h2>❌ Koneksi Database Gagal</h2><p>'.$conn->connect_error.'</p>
+        <p>1. Pastikan kredensial benar<br>2. Edit includes/config.php<br>3. Salin dari config.php.example</p>
+    </div>');
+}
+$conn->set_charset("utf8mb4");
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+require_once __DIR__ . '/periode.php';
+?>

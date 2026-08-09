@@ -1,0 +1,38 @@
+# ===========================
+# Konfigurasi (sensitif)
+# ===========================
+includes/config.php
+
+# ===========================
+# File upload & generated
+# ===========================
+uploads/
+barcode/*.png
+barcode/*.svg
+
+# ===========================
+# Log & cache
+# ===========================
+error_log
+*.log
+.migration_done
+
+# ===========================
+# OS & IDE
+# ===========================
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===========================
+# File lama / backup
+# ===========================
+*.txt
+!README.txt
+.bash_logout
+.bash_profile
+.bashrc
+.well-known/
