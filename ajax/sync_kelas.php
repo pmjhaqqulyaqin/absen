@@ -35,6 +35,11 @@ foreach ($classes as $cls) {
     $ext_id = $conn->real_escape_string($cls['id']);
     $nama = $conn->real_escape_string($cls['name']);
     
+    if (defined('KELAS_EXCLUDED') && in_array($nama, KELAS_EXCLUDED)) {
+        $skip++;
+        continue;
+    }
+    
     $synced_ext_ids[] = $ext_id;
     
     // Cek apakah kelas sudah ada berdasarkan ext_id atau nama_kelas

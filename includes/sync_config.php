@@ -10,6 +10,15 @@ define('MANDAAPP_API_URL', 'http://127.0.0.1:3001/api/sync');
 // Token sinkronisasi (harus sama dengan SYNC_API_TOKEN di mandaapp .env)
 define('SYNC_TOKEN', 'manda-absen-sync-2026-secure');
 
+// Daftar kelas yang TIDAK AKTIF / tidak perlu disinkronkan
+// Kelas-kelas ini masih ada di MandaApp tapi bukan bagian jadwal KBM aktif
+define('KELAS_EXCLUDED', [
+    'XI AGAMA',
+    'XI BHS', 
+    'XI IPA',
+    'XII PAI',
+]);
+
 /**
  * Helper: Panggil API mandaapp
  */
