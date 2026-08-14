@@ -121,7 +121,7 @@ include 'includes/header.php';
             <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
                 <div>
                     <div style="font-size:1.1rem;font-weight:700;color:#fff"><i class="fas fa-school"></i> Sinkronisasi Kelas</div>
-                    <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data kelas dari mandualotim.sch.id</div>
+                    <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data kelas <strong>dari jadwal KBM</strong> mandualotim.sch.id (hanya kelas yang ada di jadwal)</div>
                 </div>
                 <button onclick="syncKelas()" id="btnSyncKelas" style="background:#fff;color:#4f46e5;border:none;padding:10px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s">
                     <i class="fas fa-download"></i> Sinkronkan Sekarang
@@ -152,7 +152,7 @@ include 'includes/header.php';
             </div>
             <div style="padding:1.5rem">
                 <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#fbbf24">
-                    <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Sinkronkan kelas terlebih dahulu sebelum sinkronkan siswa.
+                    <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Sinkronkan kelas terlebih dahulu. Siswa hanya akan diambil dari kelas yang sudah tersinkron (kelas jadwal KBM).
                 </div>
                 <div id="resultSiswa" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)">
                     <div style="text-align:center">
@@ -300,12 +300,28 @@ function resultHTML(data) {
 
     let total = data.total_mandaapp !== undefined ? `<div style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">Total data mandaapp: <strong style="color:#fff">${data.total_mandaapp}</strong></div>` : '';
     if (data.total_dikirim !== undefined) total += `<div style="font-size:.8rem;color:var(--text-secondary)">Total dikirim: <strong style="color:#fff">${data.total_dikirim}</strong></div>`;
+    if (data.source === 'scheduled') total += `<div style="font-size:.8rem;color:#818cf8;margin-top:.25rem"><i class="fas fa-filter"></i> Filtered: hanya kelas dari jadwal KBM</div>`;
+    if (data.source === 'filtered') total += `<div style="font-size:.8rem;color:#818cf8;margin-top:.25rem"><i class="fas fa-filter"></i> Filtered: hanya siswa dari kelas jadwal</div>`;
+    if (data.total_kelas_aktif !== undefined) total += `<div style="font-size:.8rem;color:var(--text-secondary)">Kelas aktif: <strong style="color:#fff">${data.total_kelas_aktif} kelas</strong></div>`;
+    if (data.skip_kelas !== undefined && data.skip_kelas > 0) total += `<div style="font-size:.8rem;color:#fbbf24"><i class="fas fa-filter"></i> ${data.skip_kelas} siswa di-skip (kelas bukan jadwal)</div>`;
+    if (data.kelas_non_jadwal !== undefined && data.kelas_non_jadwal > 0) total += `<div style="font-size:.8rem;color:#fbbf24"><i class="fas fa-info-circle"></i> ${data.kelas_non_jadwal} kelas lokal bukan dari jadwal</div>`;
 
     let errorsHtml = '';
     if (data.errors && data.errors.length > 0) {
         errorsHtml = `<div style="margin-top:.75rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.6rem .8rem;font-size:.75rem;color:#fca5a5;max-height:120px;overflow-y:auto">
             <strong>⚠️ Catatan:</strong><br>${data.errors.slice(0, 10).join('<br>')}
             ${data.errors.length > 10 ? '<br>...dan ' + (data.errors.length - 10) + ' lainnya' : ''}
+        </div>`;
+    }
+
+    let kelasHtml = '';
+    if (data.kelas_aktif && data.kelas_aktif.length > 0) {
+        const badges = data.kelas_aktif.map(k => 
+            `<span style="display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600;margin:2px">${k}</span>`
+        ).join('');
+        kelasHtml = `<div style="margin-top:.75rem;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.15);border-radius:8px;padding:.6rem .8rem">
+            <div style="font-size:.75rem;color:#a5b4fc;margin-bottom:.4rem"><i class="fas fa-school"></i> <strong>Kelas tersinkron (${data.kelas_aktif.length}):</strong></div>
+            <div>${badges}</div>
         </div>`;
     }
 
@@ -316,6 +332,7 @@ function resultHTML(data) {
         <div>${stats}</div>
         ${total}
         ${errorsHtml}
+        ${kelasHtml}
     </div>`;
 }
 
