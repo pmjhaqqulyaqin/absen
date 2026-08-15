@@ -6,7 +6,7 @@ cek_login();
 // Pastikan tabel sync_log ada
 $conn->query("CREATE TABLE IF NOT EXISTS sync_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    tipe ENUM('kelas','siswa','absensi_push','absensi_pull') NOT NULL,
+    tipe ENUM('kelas','siswa','kelas_siswa','absensi_push','absensi_pull') NOT NULL,
     total_baru INT DEFAULT 0,
     total_update INT DEFAULT 0,
     total_skip INT DEFAULT 0,
@@ -15,7 +15,10 @@ $conn->query("CREATE TABLE IF NOT EXISTS sync_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Pastikan kolom ext_id ada di tabel kelas dan siswa (jika database hasil import lama)
+// Tambah enum value kelas_siswa jika belum ada
+$conn->query("ALTER TABLE sync_log MODIFY COLUMN tipe ENUM('kelas','siswa','kelas_siswa','absensi_push','absensi_pull') NOT NULL");
+
+// Pastikan kolom ext_id ada di tabel kelas dan siswa
 $conn->query("ALTER TABLE kelas ADD COLUMN IF NOT EXISTS ext_id VARCHAR(36) DEFAULT NULL");
 $conn->query("ALTER TABLE siswa ADD COLUMN IF NOT EXISTS ext_id VARCHAR(36) DEFAULT NULL");
 
@@ -28,6 +31,9 @@ $total_kelas_lokal = $conn->query("SELECT COUNT(*) c FROM kelas")->fetch_assoc()
 $total_absensi_hari_ini = $conn->query("SELECT COUNT(*) c FROM absensi WHERE tanggal = CURDATE()")->fetch_assoc()['c'];
 $total_siswa_synced = $conn->query("SELECT COUNT(*) c FROM siswa WHERE ext_id IS NOT NULL")->fetch_assoc()['c'];
 
+// Ambil waktu sync terakhir
+$last_sync_kelas_siswa = sync_get_last_sync($conn, 'kelas_siswa');
+
 include 'includes/header.php';
 ?>
 
@@ -35,7 +41,7 @@ include 'includes/header.php';
     <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
         <div>
             <div class="page-title"><i class="fas fa-sync-alt" style="color:#10b981"></i> Sinkronisasi Data</div>
-            <div class="page-subtitle">Sinkronkan data kelas, siswa, dan absensi dengan <strong>mandualotim.sch.id</strong></div>
+            <div class="page-subtitle">Sinkronkan data dari <strong>MandaApp</strong> (mandualotim.sch.id) via Integration API</div>
         </div>
         <div>
             <button class="btn btn-sm" onclick="cekKoneksi()" id="btnPing" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.85rem">
@@ -97,13 +103,9 @@ include 'includes/header.php';
 
     <!-- Tab Navigation -->
     <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
-        <button class="tab-btn active" onclick="switchTab('kelas')" id="tabKelas"
+        <button class="tab-btn active" onclick="switchTab('kelassiswa')" id="tabKelassiswa"
             style="padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .3s">
-            <i class="fas fa-school"></i> Sinkron Kelas
-        </button>
-        <button class="tab-btn" onclick="switchTab('siswa')" id="tabSiswa"
-            style="padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .3s">
-            <i class="fas fa-users"></i> Sinkron Siswa
+            <i class="fas fa-school"></i> Sinkron Kelas & Siswa
         </button>
         <button class="tab-btn" onclick="switchTab('absensi')" id="tabAbsensi"
             style="padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .3s">
@@ -115,49 +117,41 @@ include 'includes/header.php';
         </button>
     </div>
 
-    <!-- ===================== TAB: KELAS ===================== -->
-    <div class="sync-tab" id="panelKelas">
+    <!-- ===================== TAB: KELAS & SISWA ===================== -->
+    <div class="sync-tab" id="panelKelassiswa">
         <div class="card" style="border-radius:14px;overflow:hidden">
-            <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
-                <div>
-                    <div style="font-size:1.1rem;font-weight:700;color:#fff"><i class="fas fa-school"></i> Sinkronisasi Kelas</div>
-                    <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data kelas <strong>dari jadwal KBM</strong> mandualotim.sch.id (hanya kelas yang ada di jadwal)</div>
-                </div>
-                <button onclick="syncKelas()" id="btnSyncKelas" style="background:#fff;color:#4f46e5;border:none;padding:10px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s">
-                    <i class="fas fa-download"></i> Sinkronkan Sekarang
-                </button>
-            </div>
-            <div style="padding:1.5rem">
-                <div id="resultKelas" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)">
-                    <div style="text-align:center">
-                        <i class="fas fa-info-circle" style="font-size:2rem;opacity:.3;margin-bottom:.5rem;display:block"></i>
-                        Klik tombol di atas untuk memulai sinkronisasi kelas
+            <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:1.2rem 1.5rem">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
+                    <div>
+                        <div style="font-size:1.1rem;font-weight:700;color:#fff"><i class="fas fa-school"></i> <i class="fas fa-users" style="margin-left:4px"></i> Sinkronisasi Kelas & Siswa</div>
+                        <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data kelas dan siswa aktif dari MandaApp dalam satu langkah</div>
+                    </div>
+                    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                        <select id="syncMode" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 12px;border-radius:8px;font-size:.82rem;cursor:pointer">
+                            <option value="auto" style="color:#333">🔄 Auto (Incremental jika pernah sync)</option>
+                            <option value="full" style="color:#333">📦 Full Sync (Tarik semua data)</option>
+                            <option value="incremental" style="color:#333">⚡ Incremental (Hanya perubahan)</option>
+                        </select>
+                        <button onclick="syncKelasSiswa()" id="btnSyncKelasSiswa" style="background:#fff;color:#4f46e5;border:none;padding:10px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s">
+                            <i class="fas fa-download"></i> Sinkronkan Sekarang
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===================== TAB: SISWA ===================== -->
-    <div class="sync-tab" id="panelSiswa" style="display:none">
-        <div class="card" style="border-radius:14px;overflow:hidden">
-            <div style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
-                <div>
-                    <div style="font-size:1.1rem;font-weight:700;color:#fff"><i class="fas fa-users"></i> Sinkronisasi Siswa</div>
-                    <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data siswa aktif dari mandualotim.sch.id</div>
+                <?php if ($last_sync_kelas_siswa): ?>
+                <div style="margin-top:.6rem;font-size:.75rem;color:rgba(255,255,255,.6)">
+                    <i class="fas fa-clock"></i> Terakhir sync: <?= date('d/m/Y H:i', strtotime($last_sync_kelas_siswa)) ?>
                 </div>
-                <button onclick="syncSiswa()" id="btnSyncSiswa" style="background:#fff;color:#16a34a;border:none;padding:10px 24px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s">
-                    <i class="fas fa-download"></i> Sinkronkan Sekarang
-                </button>
+                <?php endif; ?>
             </div>
             <div style="padding:1.5rem">
-                <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#fbbf24">
-                    <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Sinkronkan kelas terlebih dahulu. Siswa hanya akan diambil dari kelas yang sudah tersinkron (kelas jadwal KBM).
+                <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#a5b4fc">
+                    <i class="fas fa-info-circle"></i> Endpoint: <code style="background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px;font-size:.75rem">/v1/classes-students</code> — 
+                    Kelas dan siswa diambil dalam satu panggilan API. Mode <strong>Incremental</strong> hanya menarik data yang berubah sejak sync terakhir.
                 </div>
-                <div id="resultSiswa" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)">
+                <div id="resultKelasSiswa" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)">
                     <div style="text-align:center">
                         <i class="fas fa-info-circle" style="font-size:2rem;opacity:.3;margin-bottom:.5rem;display:block"></i>
-                        Klik tombol di atas untuk memulai sinkronisasi siswa
+                        Klik tombol di atas untuk memulai sinkronisasi kelas & siswa
                     </div>
                 </div>
             </div>
@@ -169,26 +163,30 @@ include 'includes/header.php';
         <div class="card" style="border-radius:14px;overflow:hidden">
             <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:1.2rem 1.5rem">
                 <div style="font-size:1.1rem;font-weight:700;color:#fff"><i class="fas fa-clipboard-list"></i> Sinkronisasi Absensi</div>
-                <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik atau kirim data absensi per tanggal</div>
+                <div style="font-size:.8rem;color:rgba(255,255,255,.7)">Tarik data presensi dari MandaApp berdasarkan tanggal</div>
             </div>
             <div style="padding:1.5rem">
                 <div style="display:flex;gap:1rem;align-items:end;flex-wrap:wrap;margin-bottom:1.5rem">
                     <div>
-                        <label style="font-size:.8rem;color:var(--text-secondary);display:block;margin-bottom:4px">Pilih Tanggal</label>
+                        <label style="font-size:.8rem;color:var(--text-secondary);display:block;margin-bottom:4px">Tarik data sejak tanggal</label>
                         <input type="date" id="syncTanggal" value="<?= date('Y-m-d') ?>" 
                             style="background:var(--input-bg);border:1px solid rgba(255,255,255,.1);color:#fff;padding:10px 14px;border-radius:8px;font-size:.9rem">
                     </div>
                     <button onclick="syncAbsensiPull()" id="btnPull" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.85rem">
-                        <i class="fas fa-download"></i> Tarik dari Mandaapp
+                        <i class="fas fa-download"></i> Tarik dari MandaApp
                     </button>
-                    <button onclick="syncAbsensiPush()" id="btnPush" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;font-size:.85rem">
-                        <i class="fas fa-upload"></i> Kirim ke Mandaapp
+                    <button disabled style="background:rgba(100,116,139,.3);color:rgba(255,255,255,.4);border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:.85rem;cursor:not-allowed" title="Integration API belum mendukung push">
+                        <i class="fas fa-upload"></i> Kirim ke MandaApp <span style="font-size:.7rem;background:rgba(245,158,11,.2);color:#fbbf24;padding:2px 6px;border-radius:4px;margin-left:4px">Soon</span>
                     </button>
+                </div>
+                <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem;color:#93c5fd">
+                    <i class="fas fa-info-circle"></i> Endpoint: <code style="background:rgba(59,130,246,.15);padding:2px 6px;border-radius:4px;font-size:.75rem">/v1/attendances</code> — 
+                    Data presensi yang di-update setelah tanggal yang dipilih akan ditarik. Siswa dicocokkan via ext_id atau NIS.
                 </div>
                 <div id="resultAbsensi" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)">
                     <div style="text-align:center">
                         <i class="fas fa-info-circle" style="font-size:2rem;opacity:.3;margin-bottom:.5rem;display:block"></i>
-                        Pilih tanggal lalu klik Tarik atau Kirim
+                        Pilih tanggal lalu klik Tarik dari MandaApp
                     </div>
                 </div>
             </div>
@@ -230,6 +228,7 @@ include 'includes/header.php';
                                     $tipeMap = [
                                         'kelas' => ['🏫 Kelas', '#818cf8'],
                                         'siswa' => ['👨‍🎓 Siswa', '#22c55e'],
+                                        'kelas_siswa' => ['🔄 Kelas & Siswa', '#8b5cf6'],
                                         'absensi_push' => ['📤 Push Absensi', '#f59e0b'],
                                         'absensi_pull' => ['📥 Pull Absensi', '#3b82f6'],
                                     ];
@@ -271,8 +270,10 @@ include 'includes/header.php';
 function switchTab(tab) {
     document.querySelectorAll('.sync-tab').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
-    document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+    const panelId = 'panel' + tab.charAt(0).toUpperCase() + tab.slice(1);
+    document.getElementById(panelId).style.display = 'block';
+    const tabId = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+    document.getElementById(tabId).classList.add('active');
 }
 
 function setLoading(btn, loading) {
@@ -288,24 +289,51 @@ function setLoading(btn, loading) {
     }
 }
 
-function resultHTML(data) {
-    let stats = '';
-    if (data.baru !== undefined) stats += `<span class="sync-stat" style="background:rgba(34,197,94,.15);color:#22c55e"><i class="fas fa-plus-circle"></i> ${data.baru} Baru</span>`;
-    if (data.update !== undefined) stats += `<span class="sync-stat" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-pen"></i> ${data.update} Update</span>`;
-    if (data.skip !== undefined) stats += `<span class="sync-stat" style="background:rgba(148,163,184,.15);color:#94a3b8"><i class="fas fa-forward"></i> ${data.skip} Skip</span>`;
-    if (data.nonaktif !== undefined && data.nonaktif > 0) stats += `<span class="sync-stat" style="background:rgba(239,68,68,.15);color:#ef4444"><i class="fas fa-user-minus"></i> ${data.nonaktif} Nonaktif</span>`;
-    if (data.inserted !== undefined) stats += `<span class="sync-stat" style="background:rgba(34,197,94,.15);color:#22c55e"><i class="fas fa-plus-circle"></i> ${data.inserted} Inserted</span>`;
-    if (data.updated !== undefined) stats += `<span class="sync-stat" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-pen"></i> ${data.updated} Updated</span>`;
-    if (data.skipped !== undefined) stats += `<span class="sync-stat" style="background:rgba(148,163,184,.15);color:#94a3b8"><i class="fas fa-forward"></i> ${data.skipped} Skipped</span>`;
+function resultKelasSiswaHTML(data) {
+    // Bagian kelas
+    let kelasStats = `
+        <div style="margin-bottom:1rem">
+            <div style="font-size:.85rem;font-weight:700;color:#818cf8;margin-bottom:.5rem"><i class="fas fa-school"></i> Kelas</div>
+            <span class="sync-stat" style="background:rgba(34,197,94,.15);color:#22c55e"><i class="fas fa-plus-circle"></i> ${data.kelas_baru} Baru</span>
+            <span class="sync-stat" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-pen"></i> ${data.kelas_update} Update</span>
+            <span class="sync-stat" style="background:rgba(148,163,184,.15);color:#94a3b8"><i class="fas fa-forward"></i> ${data.kelas_skip} Skip</span>
+            <div style="font-size:.78rem;color:var(--text-secondary);margin-top:.3rem">Total dari MandaApp: <strong style="color:#fff">${data.kelas_total_api}</strong> kelas</div>
+        </div>`;
+    
+    // Bagian siswa
+    let siswaStats = `
+        <div style="margin-bottom:.5rem">
+            <div style="font-size:.85rem;font-weight:700;color:#22c55e;margin-bottom:.5rem"><i class="fas fa-users"></i> Siswa</div>
+            <span class="sync-stat" style="background:rgba(34,197,94,.15);color:#22c55e"><i class="fas fa-plus-circle"></i> ${data.siswa_baru} Baru</span>
+            <span class="sync-stat" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-pen"></i> ${data.siswa_update} Update</span>
+            <span class="sync-stat" style="background:rgba(148,163,184,.15);color:#94a3b8"><i class="fas fa-forward"></i> ${data.siswa_skip} Skip</span>`;
+    if (data.siswa_nonaktif > 0) {
+        siswaStats += `<span class="sync-stat" style="background:rgba(239,68,68,.15);color:#ef4444"><i class="fas fa-user-minus"></i> ${data.siswa_nonaktif} Nonaktif</span>`;
+    }
+    siswaStats += `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:.3rem">Total dari MandaApp: <strong style="color:#fff">${data.siswa_total_api}</strong> siswa</div>
+        </div>`;
 
-    let total = data.total_mandaapp !== undefined ? `<div style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">Total data mandaapp: <strong style="color:#fff">${data.total_mandaapp}</strong></div>` : '';
-    if (data.total_dikirim !== undefined) total += `<div style="font-size:.8rem;color:var(--text-secondary)">Total dikirim: <strong style="color:#fff">${data.total_dikirim}</strong></div>`;
-    if (data.source === 'scheduled') total += `<div style="font-size:.8rem;color:#818cf8;margin-top:.25rem"><i class="fas fa-filter"></i> Filtered: hanya kelas dari jadwal KBM</div>`;
-    if (data.source === 'filtered') total += `<div style="font-size:.8rem;color:#818cf8;margin-top:.25rem"><i class="fas fa-filter"></i> Filtered: hanya siswa dari kelas jadwal</div>`;
-    if (data.total_kelas_aktif !== undefined) total += `<div style="font-size:.8rem;color:var(--text-secondary)">Kelas aktif: <strong style="color:#fff">${data.total_kelas_aktif} kelas</strong></div>`;
-    if (data.skip_kelas !== undefined && data.skip_kelas > 0) total += `<div style="font-size:.8rem;color:#fbbf24"><i class="fas fa-filter"></i> ${data.skip_kelas} siswa di-skip (kelas bukan jadwal)</div>`;
-    if (data.kelas_non_jadwal !== undefined && data.kelas_non_jadwal > 0) total += `<div style="font-size:.8rem;color:#fbbf24"><i class="fas fa-info-circle"></i> ${data.kelas_non_jadwal} kelas lokal bukan dari jadwal</div>`;
+    // Mode info
+    let modeLabel = data.mode === 'full' ? '📦 Full Sync' : '⚡ Incremental';
+    let modeInfo = `<div style="font-size:.78rem;color:#a5b4fc;margin-top:.5rem"><i class="fas fa-info-circle"></i> Mode: ${modeLabel}`;
+    if (data.last_sync_used) {
+        modeInfo += ` (sejak ${data.last_sync_used})`;
+    }
+    modeInfo += `</div>`;
 
+    // Kelas badges
+    let kelasHtml = '';
+    if (data.kelas_names && data.kelas_names.length > 0) {
+        const badges = data.kelas_names.map(k => 
+            `<span style="display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600;margin:2px">${k}</span>`
+        ).join('');
+        kelasHtml = `<div style="margin-top:.75rem;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.15);border-radius:8px;padding:.6rem .8rem">
+            <div style="font-size:.75rem;color:#a5b4fc;margin-bottom:.4rem"><i class="fas fa-school"></i> <strong>Kelas tersinkron (${data.kelas_names.length}):</strong></div>
+            <div>${badges}</div>
+        </div>`;
+    }
+
+    // Errors
     let errorsHtml = '';
     if (data.errors && data.errors.length > 0) {
         errorsHtml = `<div style="margin-top:.75rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.6rem .8rem;font-size:.75rem;color:#fca5a5;max-height:120px;overflow-y:auto">
@@ -314,14 +342,31 @@ function resultHTML(data) {
         </div>`;
     }
 
-    let kelasHtml = '';
-    if (data.kelas_aktif && data.kelas_aktif.length > 0) {
-        const badges = data.kelas_aktif.map(k => 
-            `<span style="display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600;margin:2px">${k}</span>`
-        ).join('');
-        kelasHtml = `<div style="margin-top:.75rem;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.15);border-radius:8px;padding:.6rem .8rem">
-            <div style="font-size:.75rem;color:#a5b4fc;margin-bottom:.4rem"><i class="fas fa-school"></i> <strong>Kelas tersinkron (${data.kelas_aktif.length}):</strong></div>
-            <div>${badges}</div>
+    return `<div class="sync-result-card">
+        <div style="font-size:1rem;font-weight:700;color:#10b981;margin-bottom:.75rem">
+            <i class="fas fa-check-circle"></i> ${data.message}
+        </div>
+        ${kelasStats}
+        <div style="border-top:1px solid rgba(255,255,255,.06);margin:.75rem 0"></div>
+        ${siswaStats}
+        ${modeInfo}
+        ${kelasHtml}
+        ${errorsHtml}
+    </div>`;
+}
+
+function resultAbsensiHTML(data) {
+    let stats = '';
+    if (data.baru !== undefined) stats += `<span class="sync-stat" style="background:rgba(34,197,94,.15);color:#22c55e"><i class="fas fa-plus-circle"></i> ${data.baru} Baru</span>`;
+    if (data.update !== undefined) stats += `<span class="sync-stat" style="background:rgba(59,130,246,.15);color:#3b82f6"><i class="fas fa-pen"></i> ${data.update} Update</span>`;
+    if (data.skip !== undefined) stats += `<span class="sync-stat" style="background:rgba(148,163,184,.15);color:#94a3b8"><i class="fas fa-forward"></i> ${data.skip} Skip</span>`;
+
+    let total = data.total_mandaapp !== undefined ? `<div style="font-size:.8rem;color:var(--text-secondary);margin-top:.5rem">Total dari MandaApp: <strong style="color:#fff">${data.total_mandaapp}</strong></div>` : '';
+
+    let errorsHtml = '';
+    if (data.errors && data.errors.length > 0) {
+        errorsHtml = `<div style="margin-top:.75rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:.6rem .8rem;font-size:.75rem;color:#fca5a5;max-height:120px;overflow-y:auto">
+            <strong>⚠️ Catatan:</strong><br>${data.errors.slice(0, 10).join('<br>')}
         </div>`;
     }
 
@@ -332,7 +377,6 @@ function resultHTML(data) {
         <div>${stats}</div>
         ${total}
         ${errorsHtml}
-        ${kelasHtml}
     </div>`;
 }
 
@@ -342,6 +386,9 @@ function errorHTML(msg) {
     </div>`;
 }
 
+// ═══════════════════════════════════════════════
+// CEK KONEKSI
+// ═══════════════════════════════════════════════
 async function cekKoneksi() {
     const btn = document.getElementById('btnPing');
     setLoading(btn, true);
@@ -352,7 +399,8 @@ async function cekKoneksi() {
         el.style.display = 'block';
         if (data.success) {
             el.innerHTML = `<div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:.8rem 1rem;color:#6ee7b7;font-size:.85rem">
-                <i class="fas fa-check-circle" style="color:#10b981"></i> <strong>Koneksi berhasil!</strong> API mandaapp aktif. Timestamp: ${data.timestamp || '-'}
+                <i class="fas fa-check-circle" style="color:#10b981"></i> <strong>Koneksi berhasil!</strong> MandaApp Integration API aktif.
+                <span style="color:rgba(255,255,255,.5);margin-left:.5rem">Timestamp: ${data.timestamp || '-'}</span>
             </div>`;
         } else {
             el.innerHTML = errorHTML(data.message || 'Koneksi gagal');
@@ -364,32 +412,28 @@ async function cekKoneksi() {
     setLoading(btn, false);
 }
 
-async function syncKelas() {
-    const btn = document.getElementById('btnSyncKelas');
+// ═══════════════════════════════════════════════
+// SINKRON KELAS & SISWA (GABUNGAN)
+// ═══════════════════════════════════════════════
+async function syncKelasSiswa() {
+    const btn = document.getElementById('btnSyncKelasSiswa');
+    const mode = document.getElementById('syncMode').value;
     setLoading(btn, true);
     try {
-        const res = await fetch('ajax/sync_kelas.php');
+        const res = await fetch('ajax/sync_classes_students.php?mode=' + mode);
         const data = await res.json();
-        document.getElementById('resultKelas').innerHTML = data.success ? resultHTML(data) : errorHTML(data.message);
+        document.getElementById('resultKelasSiswa').innerHTML = data.success 
+            ? resultKelasSiswaHTML(data) 
+            : errorHTML(data.message);
     } catch (e) {
-        document.getElementById('resultKelas').innerHTML = errorHTML(e.message);
+        document.getElementById('resultKelasSiswa').innerHTML = errorHTML(e.message);
     }
     setLoading(btn, false);
 }
 
-async function syncSiswa() {
-    const btn = document.getElementById('btnSyncSiswa');
-    setLoading(btn, true);
-    try {
-        const res = await fetch('ajax/sync_siswa.php');
-        const data = await res.json();
-        document.getElementById('resultSiswa').innerHTML = data.success ? resultHTML(data) : errorHTML(data.message);
-    } catch (e) {
-        document.getElementById('resultSiswa').innerHTML = errorHTML(e.message);
-    }
-    setLoading(btn, false);
-}
-
+// ═══════════════════════════════════════════════
+// SINKRON ABSENSI
+// ═══════════════════════════════════════════════
 async function syncAbsensiPull() {
     const btn = document.getElementById('btnPull');
     const tanggal = document.getElementById('syncTanggal').value;
@@ -398,23 +442,9 @@ async function syncAbsensiPull() {
     try {
         const res = await fetch('ajax/sync_absensi.php?action=pull&tanggal=' + tanggal);
         const data = await res.json();
-        document.getElementById('resultAbsensi').innerHTML = data.success ? resultHTML(data) : errorHTML(data.message);
-    } catch (e) {
-        document.getElementById('resultAbsensi').innerHTML = errorHTML(e.message);
-    }
-    setLoading(btn, false);
-}
-
-async function syncAbsensiPush() {
-    const btn = document.getElementById('btnPush');
-    const tanggal = document.getElementById('syncTanggal').value;
-    if (!tanggal) { alert('Pilih tanggal!'); return; }
-    if (!confirm('Kirim data absensi tanggal ' + tanggal + ' ke mandaapp?')) return;
-    setLoading(btn, true);
-    try {
-        const res = await fetch('ajax/sync_absensi.php?action=push&tanggal=' + tanggal);
-        const data = await res.json();
-        document.getElementById('resultAbsensi').innerHTML = data.success ? resultHTML(data) : errorHTML(data.message);
+        document.getElementById('resultAbsensi').innerHTML = data.success 
+            ? resultAbsensiHTML(data) 
+            : errorHTML(data.message);
     } catch (e) {
         document.getElementById('resultAbsensi').innerHTML = errorHTML(e.message);
     }

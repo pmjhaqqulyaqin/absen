@@ -1,4 +1,8 @@
 <?php
+/**
+ * Cek koneksi ke MandaApp Integration API
+ * Menggunakan endpoint /v1/classes-students sebagai health check
+ */
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/sync_config.php';
 cek_login();
