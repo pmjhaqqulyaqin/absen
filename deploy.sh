@@ -33,9 +33,10 @@ echo "║   🚀 Absensi — Smart Deploy                 ║"
 echo "╚══════════════════════════════════════════════╝"
 echo ""
 
-# 1. Pull latest code
+# 1. Pull latest code (force overwrite file lokal)
 echo "📥 [1/6] Mengambil kode terbaru dari GitHub..."
-git pull origin main
+git fetch origin main
+git reset --hard origin/main
 echo ""
 
 # 2. Run pending SQL migrations
