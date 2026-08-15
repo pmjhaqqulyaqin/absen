@@ -2,6 +2,7 @@
 # Konfigurasi (sensitif)
 # ===========================
 includes/config.php
+.env
 
 # ===========================
 # File upload & generated
