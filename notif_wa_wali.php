@@ -6,6 +6,9 @@ cek_login();
 $conn->query("ALTER TABLE wali ADD COLUMN IF NOT EXISTS no_hp VARCHAR(20) DEFAULT ''");
 $conn->query("ALTER TABLE wali ADD COLUMN IF NOT EXISTS no_wa VARCHAR(20) DEFAULT ''");
 
+// ── Pastikan kolom template_wa_wali ada di tabel pengaturan ──────────
+$conn->query("ALTER TABLE pengaturan ADD COLUMN IF NOT EXISTS template_wa_wali TEXT DEFAULT NULL");
+
 $pengaturan  = get_pengaturan();
 $hari_indo   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 $bulan_indo  = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -26,6 +29,9 @@ while ($w = $wali_all->fetch_assoc()) {
 $ada_wa = count(array_filter($wali_arr, fn($w) => !empty($w['_nomor'])));
 
 $template_default = "🔔 *PENGINGAT REKAP ABSENSI SISWA*\n\nYth. Bapak/Ibu {{nama}},\n\nJangan lupa download & cetak rekap kehadiran dan poin anak-anak kita per bulan sebagai bahan laporan Bapak/Ibu mengenai perkembangan anak-anak kita selama di Madrasah. Atas perhatiannya terima kasih.\n\nKLIK LINK : https://loginku.xyz/index.php\nPIN : {{pin}}\n\nSemoga kegiatan hari ini berjalan lancar 🙏\nWassalamu'alaikum w.wb";
+
+// ── Gunakan template tersimpan jika ada, fallback ke default ─────────
+$template_aktif = !empty($pengaturan['template_wa_wali']) ? $pengaturan['template_wa_wali'] : $template_default;
 
 include 'includes/header.php';
 ?>
@@ -58,16 +64,29 @@ include 'includes/header.php';
 <div>
     <!-- Template Pesan -->
     <div class="card" style="margin-bottom:16px">
-        <div class="card-header">
-            <i class="fas fa-comment-alt" style="color:#4f46e5"></i> Template Pesan
-            <small style="font-weight:400;color:#64748b;margin-left:8px">
+        <div class="card-header" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+            <span><i class="fas fa-comment-alt" style="color:#4f46e5"></i> Template Pesan</span>
+            <small style="font-weight:400;color:#64748b">
                 Variabel: <code>{{nama}}</code> <code>{{pin}}</code>
             </small>
+            <span style="margin-left:auto;display:flex;gap:6px">
+                <button type="button" id="btnResetTemplate" onclick="resetTemplate()"
+                    style="padding:5px 12px;border-radius:6px;border:1px solid #e2e8f0;background:white;color:#64748b;font-size:.75rem;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:4px;transition:.2s"
+                    title="Kembalikan ke template bawaan">
+                    <i class="fas fa-undo"></i> Reset
+                </button>
+                <button type="button" id="btnSimpanTemplate" onclick="simpanTemplate()"
+                    style="padding:5px 14px;border-radius:6px;border:none;background:#4f46e5;color:white;font-size:.75rem;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px;transition:.2s;box-shadow:0 2px 6px rgba(79,70,229,.3)"
+                    title="Simpan template ke database">
+                    <i class="fas fa-save"></i> Simpan Template
+                </button>
+            </span>
         </div>
         <div class="card-body">
             <textarea id="templatePesan" rows="11" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px;font-size:.875rem;font-family:inherit;outline:none;resize:vertical;transition:.2s"
                 onfocus="this.style.borderColor='#6366f1'"
-                onblur="this.style.borderColor='#e2e8f0'"><?= htmlspecialchars($template_default) ?></textarea>
+                onblur="this.style.borderColor='#e2e8f0'"><?= htmlspecialchars($template_aktif) ?></textarea>
+            <div id="templateStatus" style="font-size:.75rem;margin-top:6px;min-height:20px"></div>
         </div>
     </div>
 
@@ -220,6 +239,53 @@ function bukaSemuaWA() {
             window.open(url, '_blank');
         }, i * 700);
     });
+}
+
+// ── Template Default untuk Reset ────────────────────────────────────
+var TEMPLATE_DEFAULT = <?= json_encode($template_default) ?>;
+
+// ── Simpan Template via AJAX ────────────────────────────────────────
+function simpanTemplate() {
+    var btn = document.getElementById('btnSimpanTemplate');
+    var statusEl = document.getElementById('templateStatus');
+    var template = document.getElementById('templatePesan').value.trim();
+
+    if (!template) {
+        statusEl.innerHTML = '<span style="color:#dc2626"><i class="fas fa-exclamation-circle"></i> Template tidak boleh kosong</span>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    statusEl.innerHTML = '';
+
+    var fd = new FormData();
+    fd.append('template', template);
+
+    fetch('ajax/save_template_wa.php', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok) {
+                statusEl.innerHTML = '<span style="color:#16a34a"><i class="fas fa-check-circle"></i> ' + data.msg + '</span>';
+            } else {
+                statusEl.innerHTML = '<span style="color:#dc2626"><i class="fas fa-times-circle"></i> ' + data.msg + '</span>';
+            }
+        })
+        .catch(function(err) {
+            statusEl.innerHTML = '<span style="color:#dc2626"><i class="fas fa-times-circle"></i> Error: ' + err.message + '</span>';
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Simpan Template';
+            setTimeout(function() { statusEl.innerHTML = ''; }, 4000);
+        });
+}
+
+// ── Reset ke Template Default ───────────────────────────────────────
+function resetTemplate() {
+    if (!confirm('Kembalikan template ke bawaan (default)?\n\nPerubahan belum tersimpan sampai Anda klik Simpan.')) return;
+    document.getElementById('templatePesan').value = TEMPLATE_DEFAULT;
+    document.getElementById('templateStatus').innerHTML = '<span style="color:#f59e0b"><i class="fas fa-info-circle"></i> Template direset ke default. Klik <strong>Simpan Template</strong> untuk menyimpan.</span>';
 }
 </script>
 
